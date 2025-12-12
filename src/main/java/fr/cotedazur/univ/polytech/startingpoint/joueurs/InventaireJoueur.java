@@ -1,24 +1,31 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
 import java.util.ArrayList;
 import java.util.List;
 
 public class InventaireJoueur {
-    private List<Parcelle> parcelles;
-    //private List<Amenagement> amenagements;
+    private int score;
+    private final List<Objectif> objectifs;
 
-    InventaireJoueur() {
-        this.parcelles = new ArrayList<>();
+    public InventaireJoueur() {
+        this.score = 0;
+        this.objectifs = new ArrayList<>();
     }
 
-    public void addParcelle(Parcelle parcelle) {
-        this.parcelles.add(parcelle);
-    }
-    public void removeParcelle(Parcelle parcelle) {
-        this.parcelles.remove(parcelle);
+    public void ajouterPoints(int points) {
+        this.score += points;
     }
 
+    public int getScore() {
+        return score;
+    }
 
+    public void ajouterObjectif(Objectif obj) {
+        this.objectifs.add(obj);
+    }
+
+    public List<Objectif> getObjectifs() {
+        return objectifs;
+    }
 }

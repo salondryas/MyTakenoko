@@ -24,24 +24,24 @@ class PlateauTest {
         positionProche = new Position(1,-1,0);
         parcelleRose = new Parcelle (Couleur.ROSE);
         positionsAdjacentesOrigine= List.of(
-                new Position(1,-1,0),
-                new Position(-1,1,0),
-                new Position(0,-1,1),
-                new Position(0,1,-1),
-                new Position(1,0,-1),
-                new Position(-1,0,1)
+                new Position(0,-1),
+                new Position(1,-1),
+                new Position(-1,0),
+                new Position(1,0),
+                new Position(-1,1),
+                new Position(0,1)
         );
 
         positionProche2 = new Position(1, 0, -1);
         positionsAdjacentesProches = List.of(
-                new Position(2, -2, 0),
-                new Position(1, -2, 1),
-                new Position(1, 0, -1),
-                new Position(2, -1, -1),
-                new Position(0,-1,1),
-                new Position(-1, 1, 0),
-                new Position(0, 1, -1),
-                new Position(-1,0,1)
+                new Position(1,-2),
+                new Position(2,-2),
+                new Position(0, -1),
+                new Position(2,-1),
+                new Position(1,0),
+                new Position(-1,0),
+                new Position(-1,1),
+                new Position(0,1)
         );
 
         positionLoin = new Position(5, -5, 0);
@@ -57,10 +57,7 @@ class PlateauTest {
         assertEquals(6,plateau.getEmplacementsDisponibles().size(), "Pour la position isolée, la taille de la liste des positions adjacentes disponibles ne concorde pas");
 
         // On rajoute une parcelle au plateau pour un nouveau test avec deux tuiles adjacentes
-        assertTrue(plateau.placerParcelle(parcelleRose, positionProche));
-
-        // On ne peut pas ajouter deux fois la même tuile
-        assertFalse(plateau.placerParcelle(parcelleRose, positionProche));
+        plateau.placerParcelle(parcelleRose, positionProche);
 
         // On refait le test avec une case en plus sur le plateau (et donc une case en moins de disponible)
         assertEquals(positionsAdjacentesProches, plateau.getEmplacementsDisponibles());

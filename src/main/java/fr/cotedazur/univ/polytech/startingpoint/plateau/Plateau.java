@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Plateau {
-    public static final Position POSITION_ORIGINE = new Position(0,0);
+    public static final Position POSITION_ORIGINE = new Position(0, 0);
     public static final Parcelle PARCELLE_ORIGINE = new Parcelle(POSITION_ORIGINE, Couleur.AUCUNE);
     // Utilisation d'une Map pour accès rapide par Position
     private final Map<Position, Parcelle> parcelles;
@@ -50,5 +50,8 @@ public class Plateau {
             }
         }
         return disponibles;
+    }
+    public Map<Position, Parcelle> getParcellesMap() {
+        return new HashMap<>(parcelles); // Retourne une copie pour protéger l'original
     }
 }

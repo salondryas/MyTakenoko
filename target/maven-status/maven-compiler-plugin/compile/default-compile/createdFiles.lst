@@ -1,0 +1,17 @@
+fr\cotedazur\univ\polytech\startingpoint\joueurs\InventaireJoueur.class
+fr\cotedazur\univ\polytech\startingpoint\plateau\PositionsVoisinesOrigine.class
+fr\cotedazur\univ\polytech\startingpoint\utilitaires\Couleur.class
+fr\cotedazur\univ\polytech\startingpoint\objectifs\Objectif.class
+fr\cotedazur\univ\polytech\startingpoint\utilitaires\Placable.class
+fr\cotedazur\univ\polytech\startingpoint\Partie.class
+fr\cotedazur\univ\polytech\startingpoint\actions\PoserParcelle.class
+fr\cotedazur\univ\polytech\startingpoint\utilitaires\Position.class
+fr\cotedazur\univ\polytech\startingpoint\utilitaires\InvalidCoordinatesException.class
+fr\cotedazur\univ\polytech\startingpoint\GameEngine.class
+fr\cotedazur\univ\polytech\startingpoint\joueurs\Bot.class
+fr\cotedazur\univ\polytech\startingpoint\plateau\PiocheParcelle.class
+fr\cotedazur\univ\polytech\startingpoint\actions\Action.class
+fr\cotedazur\univ\polytech\startingpoint\objectifs\ObjectifParcelleForme.class
+fr\cotedazur\univ\polytech\startingpoint\objectifs\ObjectifPoseur.class
+fr\cotedazur\univ\polytech\startingpoint\plateau\Parcelle.class
+fr\cotedazur\univ\polytech\startingpoint\plateau\Plateau.class

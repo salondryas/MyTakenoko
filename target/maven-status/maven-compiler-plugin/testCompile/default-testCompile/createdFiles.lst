@@ -1,9 +1,11 @@
+fr\cotedazur\univ\polytech\startingpoint\plateau\BambouTest.class
 fr\cotedazur\univ\polytech\startingpoint\joueurs\BotTest.class
-fr\cotedazur\univ\polytech\startingpoint\objectifs\ObjectifParcelleFormeTest.class
 fr\cotedazur\univ\polytech\startingpoint\plateau\PlateauTest.class
 fr\cotedazur\univ\polytech\startingpoint\objectifs\ObjectifPoseurTest.class
+fr\cotedazur\univ\polytech\startingpoint\plateau\JardinierTest.class
 fr\cotedazur\univ\polytech\startingpoint\utilitaires\PositionTest.class
 fr\cotedazur\univ\polytech\startingpoint\actions\PoserParcelleTest.class
 fr\cotedazur\univ\polytech\startingpoint\joueurs\InventaireJoueurTest.class
+fr\cotedazur\univ\polytech\startingpoint\plateau\PandaTest.class
 fr\cotedazur\univ\polytech\startingpoint\plateau\ParcelleTest.class
 fr\cotedazur\univ\polytech\startingpoint\plateau\PiocheParcelleTest.class

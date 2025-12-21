@@ -2,14 +2,16 @@ package fr.cotedazur.univ.polytech.startingpoint.objectifs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
-// ... autres imports
 
 public class ObjectifPoseur extends Objectif {
-    // ... vos attributs existants (nombre, couleur...)
+    private int nombre;
+    private Couleur couleur;
 
-    public ObjectifPoseur(int nombre, Couleur couleur) { // Suppression des points dans le constructeur
-        // ... initialisation
+    public ObjectifPoseur(int nombre, Couleur couleur) {
+        this.nombre = nombre;
+        this.couleur = couleur;
     }
 
     @Override
@@ -19,8 +21,14 @@ public class ObjectifPoseur extends Objectif {
 
     @Override
     public boolean valider(GameState gameState, Bot bot) {
-        // Votre logique existante, en utilisant gameState.getPlateau()
-        // ...
-        return false; // placeholder
+        int compteur = 0;
+        // On parcourt toutes les parcelles posées sur le plateau
+        for (Parcelle p : gameState.getPlateau().getParcellesMap().values()) {
+            if (p.getCouleur() == this.couleur) {
+                compteur++;
+            }
+        }
+        // Si on a assez de parcelles de la bonne couleur, c'est gagné
+        return compteur >= nombre;
     }
 }

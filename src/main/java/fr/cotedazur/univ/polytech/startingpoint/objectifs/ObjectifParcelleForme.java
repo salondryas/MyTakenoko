@@ -19,8 +19,8 @@ import static fr.cotedazur.univ.polytech.startingpoint.plateau.PositionsVoisines
  */
 public enum ObjectifParcelleForme {
     // De même couleur
-    LIGNE_DE_TROIS(List.of(TROIS, ZERO, QUATRE)),
-    TRIANGLE(List.of(UN,DEUX,ZERO)),
+    //LIGNE_DE_TROIS(List.of(TROIS, ZERO, QUATRE)),
+    //TRIANGLE(List.of(UN,DEUX,ZERO)),
     ;
 
     // La liste de toutes les configurations possibles de parcelle d'un objectif

@@ -9,7 +9,7 @@ import java.util.List;
 public class InventaireJoueur {
     private int score;
     private List<Objectif> objectifs;
-    // NOUVEAU : Stockage des bambous mangés
+    // Ajout pour le Panda
     private List<Couleur> bambous;
 
     public InventaireJoueur() {
@@ -18,7 +18,6 @@ public class InventaireJoueur {
         this.bambous = new ArrayList<>();
     }
 
-    // --- Gestion des Objectifs ---
     public void ajouterObjectif(Objectif objectif) {
         this.objectifs.add(objectif);
     }
@@ -27,7 +26,6 @@ public class InventaireJoueur {
         return new ArrayList<>(objectifs);
     }
 
-    // --- Gestion du Score ---
     public void ajouterPoints(int points) {
         this.score += points;
     }
@@ -36,26 +34,19 @@ public class InventaireJoueur {
         return score;
     }
 
-    // --- Gestion des Bambous (NOUVEAU) ---
+    // --- METHODES POUR LE PANDA ---
     public void ajouterBambou(Couleur couleur) {
         bambous.add(couleur);
     }
 
-    /**
-     * Tente de retirer un bambou d'une couleur spécifique.
-     * @return true si le bambou a été trouvé et retiré, false sinon.
-     */
     public boolean retirerBambou(Couleur couleur) {
         return bambous.remove(couleur);
-    }
-
-    public int getNombreBambous() {
-        return bambous.size();
     }
 
     public List<Couleur> getBambous() {
         return new ArrayList<>(bambous);
     }
+    // -----------------------------
 
     @Override
     public String toString() {

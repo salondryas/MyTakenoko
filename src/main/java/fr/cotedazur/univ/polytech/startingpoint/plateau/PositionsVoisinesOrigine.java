@@ -3,7 +3,6 @@ package fr.cotedazur.univ.polytech.startingpoint.plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 public enum PositionsVoisinesOrigine {
-    ZERO(new Position(0, 0)),           // Centre
     UN(new Position(0, -1)),            // Haut Gauche
     DEUX(new Position(1, -1)),          // Haut Droite
     TROIS(new Position(-1, 0)),         // Gauche

@@ -19,25 +19,19 @@ public class ObjectifJardinier extends Objectif {
 
     @Override
     public int getPoints() {
-        return 4; // Score fixe pour ce Milestone
+        return 4;
     }
 
     @Override
     public boolean valider(GameState gameState, Bot bot) {
-        // On parcourt toutes les parcelles du plateau
         Map<Position, Parcelle> parcelles = gameState.getPlateau().getParcellesMap();
 
         for (Parcelle p : parcelles.values()) {
-            // Si une parcelle a la bonne couleur et la bonne taille de bambou (ou plus)
-            if (p.getCouleur() == this.couleur && p.getNbBambou() >= tailleRequise) {
+            // CORRECTION ICI : Utilisation de getNbSectionsSurParcelle()
+            if (p.getCouleur() == this.couleur && p.getNbSectionsSurParcelle() >= tailleRequise) {
                 return true;
             }
         }
         return false;
-    }
-
-    @Override
-    public String toString() {
-        return "Objectif Jardinier : Bambou " + couleur + " de taille " + tailleRequise;
     }
 }

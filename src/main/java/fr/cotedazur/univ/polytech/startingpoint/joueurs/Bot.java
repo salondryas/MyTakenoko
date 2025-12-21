@@ -1,11 +1,13 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
-import fr.cotedazur.univ.polytech.startingpoint.GameState; // Import du contexte
+import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
+import fr.cotedazur.univ.polytech.startingpoint.actions.DeplacerJardinier;
+import fr.cotedazur.univ.polytech.startingpoint.actions.DeplacerPanda;
 import fr.cotedazur.univ.polytech.startingpoint.actions.PoserParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.PiocheParcelle; // Plus forcément nécessaire en import direct si via GameState
+import fr.cotedazur.univ.polytech.startingpoint.plateau.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
@@ -23,33 +25,66 @@ public class Bot {
         this.random = new Random();
     }
 
-    // Changement : on reçoit GameState au lieu de (Plateau, Pioche) séparés
+    // On garde la signature propre avec GameState
     public Action jouer(GameState gameState) {
-        // On récupère ce dont on a besoin depuis le contexte
-        PiocheParcelle pioche = gameState.getPioche();
         Plateau plateau = gameState.getPlateau();
+        PiocheParcelle pioche = gameState.getPioche();
 
-        Parcelle parcellePiochee = pioche.piocherParcelle();
-        if (parcellePiochee == null) return null;
+        // On détermine aléatoirement quelle action tenter (0, 1 ou 2)
+        int choixAction = random.nextInt(3);
 
-        List<Position> coupsPossibles = plateau.getEmplacementsDisponibles();
-        if (coupsPossibles.isEmpty()) return null;
+        switch (choixAction) {
+            case 0: // CAS 1 : POSER UNE PARCELLE
+                // Si la pioche est vide, on renvoie null
+                if (pioche.getSize() == 0) return null;
 
-        Position positionChoisie = coupsPossibles.get(random.nextInt(coupsPossibles.size()));
+                Parcelle parcellePiochee = pioche.piocherParcelle();
+                if (parcellePiochee == null) return null;
 
-        return new PoserParcelle(new Parcelle(positionChoisie, parcellePiochee.getCouleur()), positionChoisie);
+                List<Position> emplacements = plateau.getEmplacementsDisponibles();
+                if (emplacements.isEmpty()) return null;
+
+                Position positionParcelle = emplacements.get(random.nextInt(emplacements.size()));
+                return new PoserParcelle(new Parcelle(positionParcelle, parcellePiochee.getCouleur()), positionParcelle);
+
+            case 1: // CAS 2 : DÉPLACER LE PANDA
+                // On utilise gameState.getPanda() si vous l'avez ajouté au GameState, sinon on récupère via plateau
+                // Note : Assurez-vous d'avoir accès au Panda via GameState
+                // Si GameState n'a pas getPanda(), ajoutez-le dans GameState.java !
+                // Pour l'instant, supposons que le Panda est géré dans GameState
+
+                // Adaptez ceci selon où est stocké votre Panda (dans GameState ou Plateau ?)
+                // Si le Panda est une classe à part dans GameState :
+                List<Position> deplacementsPanda = plateau.getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
+
+                if (deplacementsPanda.isEmpty()) return null;
+
+                Position destinationPanda = deplacementsPanda.get(random.nextInt(deplacementsPanda.size()));
+                return new DeplacerPanda(gameState.getPanda(), destinationPanda);
+
+            case 2: // CAS 3 : DÉPLACER LE JARDINIER
+                List<Position> deplacementsJardinier = plateau.getTrajetsLigneDroite(gameState.getJardinier().getPosition());
+
+                if (deplacementsJardinier.isEmpty()) return null;
+
+                Position destinationJardinier = deplacementsJardinier.get(random.nextInt(deplacementsJardinier.size()));
+                return new DeplacerJardinier(gameState.getJardinier(), destinationJardinier);
+
+            default:
+                return null;
+        }
     }
 
-    public void verifierObjectifs(Plateau plateau) {
+    public void verifierObjectifs(GameState gameState) {
         for (Objectif obj : inventaire.getObjectifs()) {
-            if (!obj.isValide() && obj.valider(plateau)) {
+            if (obj.valider(gameState, this)) {
                 System.out.println(nom + " a validé l'objectif : " + obj.getClass().getSimpleName() + " (+" + obj.getPoints() + " pts)");
                 inventaire.ajouterPoints(obj.getPoints());
+                // Idéalement, marquez l'objectif comme validé ici
             }
         }
     }
 
-    // Getters inchangés...
     public String getNom() { return nom; }
     public int getScore() { return inventaire.getScore(); }
     public InventaireJoueur getInventaire() { return inventaire; }

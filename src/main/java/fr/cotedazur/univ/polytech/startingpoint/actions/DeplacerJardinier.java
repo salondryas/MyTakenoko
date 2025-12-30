@@ -2,15 +2,15 @@ package fr.cotedazur.univ.polytech.startingpoint.actions;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardiner;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 public class DeplacerJardinier implements Action {
-    private Jardiner jardinier;
+    private Jardinier jardinier;
     private Position destination;
 
-    public DeplacerJardinier(Jardiner jardinier, Position destination) {
+    public DeplacerJardinier(Jardinier jardinier, Position destination) {
         this.jardinier = jardinier;
         this.destination = destination;
     }

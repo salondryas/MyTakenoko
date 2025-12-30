@@ -9,12 +9,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class JardinierTest {
 
     private Plateau plateau;
-    private Jardiner jardinier; // J'utilise ton nom de classe "Jardiner"
+    private Jardinier jardinier; // J'utilise ton nom de classe "Jardiner"
 
     @BeforeEach
     void setUp() {
         plateau = new Plateau();
-        jardinier = new Jardiner();
+        jardinier = new Jardinier();
     }
 
     @Test

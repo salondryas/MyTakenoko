@@ -9,8 +9,8 @@ import java.util.List;
 public class InventaireJoueur {
     private int score;
     private List<Objectif> objectifs;
-    // Ajout pour le Panda
     private List<Couleur> bambous;
+    private int nombreObjectifsValides = 0;
 
     public InventaireJoueur() {
         this.score = 0;
@@ -22,7 +22,14 @@ public class InventaireJoueur {
         this.objectifs.add(objectif);
     }
 
+    // --- CORRECTION : Méthode pour retirer un objectif validé ---
+    public void retirerObjectif(Objectif objectif) {
+        this.objectifs.remove(objectif);
+    }
+    // ------------------------------------------------------------
+
     public List<Objectif> getObjectifs() {
+        // Retourne une copie pour protéger la liste (ce qui a causé le bug avant)
         return new ArrayList<>(objectifs);
     }
 
@@ -34,7 +41,6 @@ public class InventaireJoueur {
         return score;
     }
 
-    // --- METHODES POUR LE PANDA ---
     public void ajouterBambou(Couleur couleur) {
         bambous.add(couleur);
     }
@@ -46,7 +52,14 @@ public class InventaireJoueur {
     public List<Couleur> getBambous() {
         return new ArrayList<>(bambous);
     }
-    // -----------------------------
+
+    public void incrementerObjectifsValides() {
+        this.nombreObjectifsValides++;
+    }
+
+    public int getNombreObjectifsValides() {
+        return this.nombreObjectifsValides;
+    }
 
     @Override
     public String toString() {

@@ -11,6 +11,7 @@ import fr.cotedazur.univ.polytech.startingpoint.plateau.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
+import java.util.ArrayList; // Import nécessaire
 import java.util.List;
 import java.util.Random;
 
@@ -25,19 +26,15 @@ public class Bot {
         this.random = new Random();
     }
 
-    // On garde la signature propre avec GameState
     public Action jouer(GameState gameState) {
         Plateau plateau = gameState.getPlateau();
         PiocheParcelle pioche = gameState.getPioche();
 
-        // On détermine aléatoirement quelle action tenter (0, 1 ou 2)
         int choixAction = random.nextInt(3);
 
         switch (choixAction) {
-            case 0: // CAS 1 : POSER UNE PARCELLE
-                // Si la pioche est vide, on renvoie null
+            case 0: // POSER PARCELLE
                 if (pioche.getSize() == 0) return null;
-
                 Parcelle parcellePiochee = pioche.piocherParcelle();
                 if (parcellePiochee == null) return null;
 
@@ -47,26 +44,16 @@ public class Bot {
                 Position positionParcelle = emplacements.get(random.nextInt(emplacements.size()));
                 return new PoserParcelle(new Parcelle(positionParcelle, parcellePiochee.getCouleur()), positionParcelle);
 
-            case 1: // CAS 2 : DÉPLACER LE PANDA
-                // On utilise gameState.getPanda() si vous l'avez ajouté au GameState, sinon on récupère via plateau
-                // Note : Assurez-vous d'avoir accès au Panda via GameState
-                // Si GameState n'a pas getPanda(), ajoutez-le dans GameState.java !
-                // Pour l'instant, supposons que le Panda est géré dans GameState
-
-                // Adaptez ceci selon où est stocké votre Panda (dans GameState ou Plateau ?)
-                // Si le Panda est une classe à part dans GameState :
+            case 1: // PANDA
+                // (Note: assurez-vous que getPanda() est bien dans GameState, sinon adaptez)
                 List<Position> deplacementsPanda = plateau.getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
-
                 if (deplacementsPanda.isEmpty()) return null;
-
                 Position destinationPanda = deplacementsPanda.get(random.nextInt(deplacementsPanda.size()));
                 return new DeplacerPanda(gameState.getPanda(), destinationPanda);
 
-            case 2: // CAS 3 : DÉPLACER LE JARDINIER
+            case 2: // JARDINIER
                 List<Position> deplacementsJardinier = plateau.getTrajetsLigneDroite(gameState.getJardinier().getPosition());
-
                 if (deplacementsJardinier.isEmpty()) return null;
-
                 Position destinationJardinier = deplacementsJardinier.get(random.nextInt(deplacementsJardinier.size()));
                 return new DeplacerJardinier(gameState.getJardinier(), destinationJardinier);
 
@@ -75,14 +62,29 @@ public class Bot {
         }
     }
 
+    // --- CORRECTION MAJEURE ICI ---
     public void verifierObjectifs(GameState gameState) {
+        List<Objectif> objectifsAValider = new ArrayList<>();
+
+        // 1. On identifie les objectifs remplis
         for (Objectif obj : inventaire.getObjectifs()) {
             if (obj.valider(gameState, this)) {
                 System.out.println(nom + " a validé l'objectif : " + obj.getClass().getSimpleName() + " (+" + obj.getPoints() + " pts)");
-                inventaire.ajouterPoints(obj.getPoints());
-                // Idéalement, marquez l'objectif comme validé ici
+                objectifsAValider.add(obj);
             }
         }
+
+        // 2. On traite les récompenses et on retire les objectifs de l'inventaire
+        for (Objectif obj : objectifsAValider) {
+            inventaire.ajouterPoints(obj.getPoints());
+            inventaire.incrementerObjectifsValides();
+            inventaire.retirerObjectif(obj); // Suppression de la vraie liste
+        }
+    }
+    // -----------------------------
+
+    public int getNombreObjectifsValides() {
+        return inventaire.getNombreObjectifsValides();
     }
 
     public String getNom() { return nom; }

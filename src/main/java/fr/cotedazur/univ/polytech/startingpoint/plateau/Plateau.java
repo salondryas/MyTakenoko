@@ -2,6 +2,7 @@ package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives;
 
 import java.util.*;
 
@@ -33,10 +34,12 @@ public class Plateau {
         Set<Position> candidats = new HashSet<>();
 
         for (Position posOccupee : parcelles.keySet()) {
-            for (PositionsVoisinesOrigine direction : PositionsVoisinesOrigine.values()) {
-                Position voisin = posOccupee.add(direction.getPositionVoisine());
-                if (!parcelles.containsKey(voisin)) {
-                    candidats.add(voisin);
+            for (PositionsRelatives direction : PositionsRelatives.values()) {
+                if (direction != PositionsRelatives.ZERO) {
+                    Position voisin = posOccupee.add(direction.getPosition());
+                    if (!parcelles.containsKey(voisin)) {
+                        candidats.add(voisin);
+                    }
                 }
             }
         }
@@ -51,10 +54,12 @@ public class Plateau {
 
     private boolean respecteReglePose(Position position) {
         int nbVoisinsOccupes = 0;
-        for (PositionsVoisinesOrigine direction : PositionsVoisinesOrigine.values()) {
-            Position voisin = position.add(direction.getPositionVoisine());
-            if (voisin.equals(POSITION_ORIGINE)) return true;
-            if (parcelles.containsKey(voisin)) nbVoisinsOccupes++;
+        for (PositionsRelatives direction : PositionsRelatives.values()) {
+            if (direction != PositionsRelatives.ZERO) {
+                Position voisin = position.add(direction.getPosition());
+                if (voisin.equals(POSITION_ORIGINE)) return true;
+                if (parcelles.containsKey(voisin)) nbVoisinsOccupes++;
+            }
         }
         return nbVoisinsOccupes >= 2;
     }
@@ -71,14 +76,16 @@ public class Plateau {
      */
     public List<Position> getTrajetsLigneDroite(Position depart) {
         List<Position> destinationsPossibles = new ArrayList<>();
-        for (PositionsVoisinesOrigine direction : PositionsVoisinesOrigine.values()) {
-            Position vecteur = direction.getPositionVoisine();
-            Position testPos = depart.add(vecteur);
+        for (PositionsRelatives direction : PositionsRelatives.values()) {
+            if (direction != PositionsRelatives.ZERO) {
+                Position vecteur = direction.getPosition();
+                Position testPos = depart.add(vecteur);
 
-            // On avance tant qu'il y a une parcelle (on ne peut pas traverser un trou)
-            while (parcelles.containsKey(testPos)) {
-                destinationsPossibles.add(testPos);
-                testPos = testPos.add(vecteur);
+                // On avance tant qu'il y a une parcelle (on ne peut pas traverser un trou)
+                while (parcelles.containsKey(testPos)) {
+                    destinationsPossibles.add(testPos);
+                    testPos = testPos.add(vecteur);
+                }
             }
         }
         return destinationsPossibles;
@@ -93,5 +100,13 @@ public class Plateau {
             return parcelle.getNbSectionsSurParcelle(); // Utilise la méthode de votre collègue
         }
         return 0;
+    }
+
+    public Set<Position> getPositionOccupees(){
+        Set<Position> positionsOccupees= new HashSet<>();
+        for (Parcelle parcelle : parcelles.values()) {
+            positionsOccupees.add(parcelle.getPosition());
+        }
+        return positionsOccupees;
     }
 }

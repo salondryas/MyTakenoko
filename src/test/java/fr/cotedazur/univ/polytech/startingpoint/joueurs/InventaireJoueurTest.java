@@ -17,9 +17,7 @@ class InventaireJoueurTest {
 
     @Test
     void testAjouterEtRecupererObjectif() {
-        // Correction : Constructeur à 2 arguments (nombre requis, couleur)
         ObjectifPoseur obj = new ObjectifPoseur(3, Couleur.ROSE);
-
         inventaire.ajouterObjectif(obj);
 
         assertEquals(1, inventaire.getObjectifs().size());
@@ -31,5 +29,33 @@ class InventaireJoueurTest {
         assertEquals(0, inventaire.getScore());
         inventaire.ajouterPoints(10);
         assertEquals(10, inventaire.getScore());
+    }
+
+    // --- NOUVEAUX TESTS A AJOUTER ---
+
+    @Test
+    void testGestionBambous() {
+        // Au début c'est vide
+        assertTrue(inventaire.getBambous().isEmpty());
+
+        // On ajoute un bambou rose
+        inventaire.ajouterBambou(Couleur.ROSE);
+        assertEquals(1, inventaire.getBambous().size());
+        assertTrue(inventaire.getBambous().contains(Couleur.ROSE));
+
+        // On le retire
+        boolean retraitReussi = inventaire.retirerBambou(Couleur.ROSE);
+        assertTrue(retraitReussi);
+        assertTrue(inventaire.getBambous().isEmpty());
+    }
+
+    @Test
+    void testCompteurObjectifsValides() {
+        assertEquals(0, inventaire.getNombreObjectifsValides());
+
+        inventaire.incrementerObjectifsValides();
+        inventaire.incrementerObjectifsValides();
+
+        assertEquals(2, inventaire.getNombreObjectifsValides());
     }
 }

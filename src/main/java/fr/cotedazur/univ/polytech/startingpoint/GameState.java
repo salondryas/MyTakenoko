@@ -1,7 +1,7 @@
 package fr.cotedazur.univ.polytech.startingpoint;
 
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardiner;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Panda;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
@@ -17,14 +17,14 @@ public class GameState {
     private final PiocheParcelle pioche;
     private final List<Bot> joueurs;
     private Panda panda;
-    private Jardiner jardinier;
+    private Jardinier jardinier;
 
     public GameState(List<Bot> joueurs) {
         this.joueurs = joueurs;
         this.plateau = new Plateau();
         this.pioche = new PiocheParcelle();
         this.panda = new Panda();
-        this.jardinier = new Jardiner();
+        this.jardinier = new Jardinier();
     }
 
     public Plateau getPlateau() {
@@ -39,5 +39,5 @@ public class GameState {
         return joueurs;
     }
     public Panda getPanda() { return panda; }
-    public Jardiner getJardinier() { return jardinier; }
+    public Jardinier getJardinier() { return jardinier; }
 }

@@ -1,6 +1,7 @@
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\Action.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\DeplacerJardinier.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\DeplacerPanda.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\PiocherObjectif.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\PoserParcelle.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\GameEngine.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\GameState.java
@@ -9,8 +10,12 @@ C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\Objectif.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\ObjectifJardinier.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\ObjectifPanda.java
-C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\ObjectifParcelleForme.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\ObjectifPoseur.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\parcelle\CarteParcelle.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\parcelle\Forme.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\parcelle\Motif.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\PiocheObjectif.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\TypeObjectif.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\Partie.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Bambou.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Jardinier.java
@@ -18,8 +23,8 @@ C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Parcelle.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\PiocheParcelle.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Plateau.java
-C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\PositionsVoisinesOrigine.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\utilitaires\Couleur.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\utilitaires\InvalidCoordinatesException.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\utilitaires\Placable.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\utilitaires\Position.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\utilitaires\PositionsRelatives.java

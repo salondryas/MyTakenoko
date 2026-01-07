@@ -81,7 +81,7 @@ public class Plateau {
                 Position vecteur = direction.getPosition();
                 Position testPos = depart.add(vecteur);
 
-                // On avance tant qu'il y a une parcelle (on ne peut pas traverser un trou)
+                // On avance tant qu'il y a une parcelle (on ne peut pas traverser un trou).
                 while (parcelles.containsKey(testPos)) {
                     destinationsPossibles.add(testPos);
                     testPos = testPos.add(vecteur);
@@ -97,7 +97,7 @@ public class Plateau {
     public int getNombreDeSectionsAPosition(Position pos) {
         Parcelle parcelle = parcelles.get(pos);
         if (parcelle != null) {
-            return parcelle.getNbSectionsSurParcelle(); // Utilise la méthode de votre collègue
+            return parcelle.getNbSectionsSurParcelle();
         }
         return 0;
     }
@@ -108,5 +108,35 @@ public class Plateau {
             positionsOccupees.add(parcelle.getPosition());
         }
         return positionsOccupees;
+    }
+    /**
+     * Récupère la liste des parcelles adjacentes à une position donnée
+     * qui ont exactement la même couleur que la parcelle située à cette position.
+     */
+    public java.util.List<Parcelle> getParcellesVoisinesMemeCouleur(fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position positionCible) {
+        java.util.List<Parcelle> voisinesMemeCouleur = new java.util.ArrayList<>();
+
+        // 1. On récupère la parcelle centrale
+        Parcelle parcelleCentrale = getParcelle(positionCible);
+        if (parcelleCentrale == null) return voisinesMemeCouleur; // Sécurité
+
+        // 2. CORRECTION : On parcourt l'Enum directement
+        for (PositionsRelatives direction : PositionsRelatives.values()) {
+            // On ignore la position ZERO (qui est la case elle-même).
+            if (direction != PositionsRelatives.ZERO) {
+
+                // On calcule la position de la voisine en ajoutant le vecteur de direction
+                fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position posVoisine = positionCible.add(direction.getPosition());
+
+                // 3. On récupère la parcelle voisine
+                Parcelle voisine = getParcelle(posVoisine);
+
+                // 4. On vérifie : elle existe ET elle a la même couleur
+                if (voisine != null && voisine.getCouleur() == parcelleCentrale.getCouleur()) {
+                    voisinesMemeCouleur.add(voisine);
+                }
+            }
+        }
+        return voisinesMemeCouleur;
     }
 }

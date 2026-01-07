@@ -1,11 +1,9 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
-import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
-import fr.cotedazur.univ.polytech.startingpoint.actions.DeplacerJardinier;
-import fr.cotedazur.univ.polytech.startingpoint.actions.DeplacerPanda;
-import fr.cotedazur.univ.polytech.startingpoint.actions.PoserParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.actions.*;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
@@ -56,7 +54,11 @@ public class Bot {
                 if (deplacementsJardinier.isEmpty()) return null;
                 Position destinationJardinier = deplacementsJardinier.get(random.nextInt(deplacementsJardinier.size()));
                 return new DeplacerJardinier(gameState.getJardinier(), destinationJardinier);
-
+            case 3: // PIOCHER OBJECTIF (Nouveau !)
+                // Pour l'instant, on choisit le type au hasard
+                int choixType = random.nextInt(2); // 0 ou 1 (Jardinier ou Panda)
+                TypeObjectif typeChoisi = (choixType == 0) ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
+                return new PiocherObjectif(typeChoisi);
             default:
                 return null;
         }

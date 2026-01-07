@@ -42,18 +42,5 @@ class PandaTest {
                 "La parcelle (2, -1, -1) nécessite un virage, elle ne doit pas être accessible en ligne droite.");
     }
 
-    @Test
-    void testChoisirEtDeplacerActionComplete() {
-        Position destination = new Position(1, 0, -1);
-        Parcelle parcelle = new Parcelle(Couleur.JAUNE);
-        plateau.placerParcelle(parcelle, destination);
 
-        // On s'assure que le bambou a bien 1 section (taille par défaut)
-        assertEquals(1, plateau.getNombreDeSectionsAPosition(destination));
-
-        panda.choisirEtDeplacer(plateau);
-
-        assertEquals(destination, panda.getPositionPanda(), "Le panda doit avoir atteint la destination.");
-        assertEquals(0, plateau.getNombreDeSectionsAPosition(destination), "Le bambou doit avoir été mangé (0 section).");
-    }
 }

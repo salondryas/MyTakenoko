@@ -51,6 +51,14 @@ public class Parcelle extends Placable {
             plateau.placerParcelle(this, position);
         }
     }
+    public boolean pousserBambou() {
+        if (bambou != null && getNbSectionsSurParcelle() < 4) {
+            // C'est ici qu'on utilise la méthode que vous m'avez montrée !
+            bambou.croissance();
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public boolean equals(Object o) {

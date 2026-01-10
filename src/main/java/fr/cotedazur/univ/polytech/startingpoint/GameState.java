@@ -47,8 +47,10 @@ public class GameState {
         piocheJardinier.melanger();
 
         // 2. Remplir Pioche Panda (Décommentez dès que ObjectifPanda est prêt)
-        // piochePanda.ajouter(new ObjectifPanda(2, Couleur.VERT, 4));
-        // piochePanda.melanger();
+        piochePanda.ajouter(new ObjectifPanda(4, Couleur.VERT, 2));
+        piochePanda.ajouter(new ObjectifPanda(4, Couleur.JAUNE, 2));
+        piochePanda.ajouter(new ObjectifPanda(4, Couleur.ROSE, 2));
+        piochePanda.melanger();
 
         // 3. Remplir Pioche Parcelle (Avec votre classe ObjectifPoseur)
         // Exemple : 3 parcelles VERTES rapportent 3 points (adaptez selon votre constructeur)

@@ -9,22 +9,27 @@ import java.util.List;
 public class ObjectifPanda extends Objectif {
     private final Couleur couleur;
     private final int nombreRequis;
+    private final int points; // AJOUT : le champ pour les points
 
-    public ObjectifPanda(Couleur couleur, int nombreRequis) {
+    // CORRECTION : Constructeur à 3 paramètres pour correspondre à Partie.java
+    // Signature : (int points, Couleur couleur, int nombreRequis)
+    public ObjectifPanda(int points, Couleur couleur, int nombreRequis) {
+        super();
+        this.points = points;
         this.couleur = couleur;
         this.nombreRequis = nombreRequis;
     }
 
     @Override
     public int getPoints() {
-        return 3; // Score fixe pour ce Milestone
+        return points; // On retourne les points stockés
     }
 
     @Override
     public boolean valider(GameState gameState, Bot bot) {
         // 1. Compter les bambous de la bonne couleur dans l'inventaire
         int compteur = 0;
-        List<Couleur> bambousDuBot = bot.getInventaire().getBambous(); // Assurez-vous d'avoir ce getter
+        List<Couleur> bambousDuBot = bot.getInventaire().getBambous();
 
         for (Couleur c : bambousDuBot) {
             if (c == this.couleur) {
@@ -46,6 +51,6 @@ public class ObjectifPanda extends Objectif {
 
     @Override
     public String toString() {
-        return "Objectif Panda : Manger " + nombreRequis + " bambous " + couleur;
+        return "Objectif Panda : Manger " + nombreRequis + " bambous " + couleur + " (" + points + "pts)";
     }
 }

@@ -22,6 +22,8 @@ public class PoserParcelle implements Action {
 
     @Override
     public String toString() {
-        return "pose " + parcelle + " en " + position;
+        // Avant : return "pose " + parcelle + " en " + position;
+        // Après : Plus propre, on prend juste la couleur de la parcelle
+        return "pose une parcelle " + parcelle.getCouleur() + " en " + position;
     }
 }

@@ -2,6 +2,7 @@ package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,11 +15,14 @@ class BambouTest {
         bambouVert = new Bambou(Couleur.VERT);
     }
 
-    @Test
-    void testInitialisation() {
-        assertEquals(1, bambouVert.getNumberOfSections(), "Un bambou doit commencer avec 1 section.");
-        assertEquals(Couleur.VERT, bambouVert.getSectionColour());
-    }
+    /*
+     * @Test
+     * void testInitialisation() {
+     * assertEquals(1, bambouVert.getNumberOfSections(),
+     * "Un bambou doit commencer avec 1 section.");
+     * assertEquals(Couleur.VERT, bambouVert.getSectionColour());
+     * }
+     */
 
     @Test
     void testCroissanceLimitee() {
@@ -46,5 +50,49 @@ class BambouTest {
 
         assertEquals(stockInitial - 1, Bambou.number_of_green_sections,
                 "Le stock statique de sections vertes doit diminuer de 1.");
+    }
+
+    @Test
+    @DisplayName("Bambou initialisé avec 0 section par défaut")
+    void testBambouInitial() {
+        Bambou bambou = new Bambou(Couleur.VERT);
+
+        assertEquals(0, bambou.getNumberOfSections());
+    }
+
+    @Test
+    @DisplayName("faireApparaitre passe de 0 à 1 section")
+    void testFaireApparaitre() {
+        Bambou bambou = new Bambou(Couleur.VERT);
+
+        boolean resultat = bambou.faireApparaitre();
+
+        assertTrue(resultat);
+        assertEquals(1, bambou.getNumberOfSections());
+    }
+
+    @Test
+    @DisplayName("faireApparaitre ne fait rien si bambou déjà présent")
+    void testFaireApparaitreDejaPresent() {
+        Bambou bambou = new Bambou(Couleur.VERT);
+        bambou.faireApparaitre(); // 0 -> 1
+
+        boolean resultat = bambou.faireApparaitre(); // Tentative 1 -> 1
+
+        assertFalse(resultat);
+        assertEquals(1, bambou.getNumberOfSections());
+    }
+
+    @Test
+    @DisplayName("faireApparaitre ne fait rien après croissance")
+    void testFaireApparaitreApresCroissance() {
+        Bambou bambou = new Bambou(Couleur.VERT);
+        bambou.faireApparaitre(); // 0 -> 1
+        bambou.croissance(); // 1 -> 2
+
+        boolean resultat = bambou.faireApparaitre();
+
+        assertFalse(resultat);
+        assertEquals(2, bambou.getNumberOfSections());
     }
 }

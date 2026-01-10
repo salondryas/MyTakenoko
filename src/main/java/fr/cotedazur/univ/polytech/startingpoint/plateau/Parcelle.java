@@ -9,28 +9,32 @@ import java.util.Objects;
 public class Parcelle extends Placable {
     private Couleur couleur;
     private Bambou bambou;
+    private boolean irriguee; // Booléen pour suivre l'état d'irrigation
 
-    // Constructeur pour la pioche des parcelles, elles ont une position null si elles sont dans l'inventaire d'un joueur
-    public Parcelle(Couleur couleur){
+    // Constructeur pour la pioche des parcelles, elles ont une position null si
+    // elles sont dans l'inventaire d'un joueur
+    public Parcelle(Couleur couleur) {
         super(null);
         this.couleur = couleur;
         this.bambou = new Bambou(couleur);
+        this.irriguee = false;
     }
 
-    //constructeur pour l'utilisation des parcelles dans le jeu
+    // constructeur pour l'utilisation des parcelles dans le jeu
     public Parcelle(Position position, Couleur couleur) {
         super(position);
         this.couleur = couleur;
         this.bambou = new Bambou(couleur);
+        this.irriguee = false;
     }
 
-    public Bambou getBambou(){
+    public Bambou getBambou() {
         return bambou;
     }
 
-    //retourne le nombre de sections présentes sur cette parcelle précisément
-    public int getNbSectionsSurParcelle(){
-        if (this.bambou != null){
+    // retourne le nombre de sections présentes sur cette parcelle précisément
+    public int getNbSectionsSurParcelle() {
+        if (this.bambou != null) {
             return this.bambou.getNumberOfSections();
         }
         return 0;
@@ -42,7 +46,8 @@ public class Parcelle extends Placable {
 
     @Override
     public String toString() {
-        if (position==null) return couleur.toString();
+        if (position == null)
+            return couleur.toString();
         return couleur + " : " + super.toString();
     }
 
@@ -51,9 +56,14 @@ public class Parcelle extends Placable {
             plateau.placerParcelle(this, position);
         }
     }
+
     public boolean pousserBambou() {
+        // CORRECTION : Rien ne pousse sur l'étang (Couleur AUCUNE)
+        if (this.couleur == Couleur.AUCUNE) {
+            return false;
+        }
+
         if (bambou != null && getNbSectionsSurParcelle() < 4) {
-            // C'est ici qu'on utilise la méthode que vous m'avez montrée !
             bambou.croissance();
             return true;
         }
@@ -62,14 +72,31 @@ public class Parcelle extends Placable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if ( o == null || o.getClass() != this.getClass()) return false;
+        if (o == this)
+            return true;
+        if (o == null || o.getClass() != this.getClass())
+            return false;
         Parcelle parcelle = (Parcelle) o;
         return parcelle.getPosition().equals(this.getPosition()) && parcelle.getCouleur().equals(couleur);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position,couleur);
+        return Objects.hash(position, couleur);
+    }
+
+    public boolean estIrriguee() {
+        return irriguee;
+    }
+
+    /**
+     * Déclenche l'irrigation de cette parcelle.
+     * Marque la parcelle comme irriguée et fait apparaître le bambou (0 -> 1).
+     */
+    public void triggerIrrigation() {
+        if (!irriguee) {
+            irriguee = true;
+            bambou.faireApparaitre();
+        }
     }
 }

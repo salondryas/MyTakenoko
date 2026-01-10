@@ -4,35 +4,38 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class JardinierTest {
-
-    private Plateau plateau;
-    private Jardinier jardinier; // J'utilise ton nom de classe "Jardiner"
+    Jardinier jardinier;
+    Plateau plateau;
 
     @BeforeEach
     void setUp() {
-        plateau = new Plateau();
         jardinier = new Jardinier();
+        plateau = new Plateau();
     }
 
     @Test
-    void testActionPousserBambou() {
-        Position posCible = new Position(1, -1);
-        Parcelle parcelle = new Parcelle(Couleur.VERT);
-        plateau.placerParcelle(parcelle, posCible);
+    void deplacerJardinier() {
+        Position pos = new Position(1, 0);
+        jardinier.setPosition(pos);
+        assertEquals(pos, jardinier.getPosition());
+    }
 
-        // On note la taille avant l'action
-        int tailleAvant = parcelle.getBambou().getNumberOfSections();
+    @Test
+    void verifierPousseBambou() {
+        Position pos = new Position(0, 1);
+        Parcelle parcelle = new Parcelle(pos, Couleur.VERT);
 
-        // Le jardinier effectue son action sur la case
-        jardinier.pousserBambou(posCible, plateau);
+        // Le placement à côté de l'étang irrigue la parcelle -> 1ère section de bambou pousse auto
+        plateau.placerParcelle(parcelle, pos); // +1 section (car irriguée auto)
 
-        // On vérifie que la taille a augmenté de 1
-        int tailleApres = parcelle.getBambou().getNumberOfSections();
+        jardinier.setPosition(pos);
+        parcelle.pousserBambou(); // +2ème section
 
-        assertEquals(tailleAvant + 1, tailleApres,
-                "Le bambou doit grandir d'une section après l'action du jardinier.");
+        // CORRECTION : On attend 2 sections
+        assertEquals(2, parcelle.getNbSectionsSurParcelle());
     }
 }

@@ -180,21 +180,20 @@ class CarteParcelleTest {
      * Les couleurs et les positions sont bonnes (2 ROSES, 2JAUNES), mais elles sont inversées.
      */
     @Test
-    void testLosangeRoseJauneInvalideSiCouleursInversees() {
+    void testLosangeRoseJauneInvalideSiMauvaisesCouleurs() {
         CarteParcelle objectif = CarteParcelle.LOSANGE_ROSE_JAUNE;
+        centreRelatif = new Position( 1,0 );
 
-        centreRelatif = new Position( 1,0 ); // À droite de l'origine
+        // TEST : On remplace le JAUNE par du VERT.
+        // Aucune rotation ne pourra transformer du VERT en JAUNE.
+        placerParcelleRelative(centreRelatif, DEUX, Couleur.VERT); // Au lieu de JAUNE
+        placerParcelleRelative(centreRelatif, QUATRE, Couleur.VERT); // Au lieu de JAUNE
 
-        // On met du JAUNE là où il faut du ROSE
-        placerParcelleRelative(centreRelatif, DEUX, Couleur.JAUNE);
-        placerParcelleRelative(centreRelatif, QUATRE, Couleur.JAUNE);
-
-        // Et du ROSE là où il faut du JAUNE
         placerParcelleRelative(centreRelatif, ZERO, Couleur.ROSE);
         placerParcelleRelative(centreRelatif, SIX, Couleur.ROSE);
 
         assertFalse(objectif.estValide(plateau),
-                "L'objectif ne doit PAS être validé si les couleurs sont inversées, même si la forme géométrique est la même.");
+                "L'objectif ne doit pas valider si les couleurs sont fausses (Vert au lieu de Jaune).");
     }
 
     // Méthode utilitaire pour placer les parcelles autour d'une autre.

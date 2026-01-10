@@ -4,31 +4,42 @@ import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+
+import java.util.Map;
 
 public class ObjectifPoseur extends Objectif {
-    private int nombre;
+    private int nombreParcelles;
     private Couleur couleur;
+    private int points; // AJOUT : Champ pour les points
 
-    public ObjectifPoseur(int nombre, Couleur couleur) {
-        this.nombre = nombre;
+    // AJOUT : Le constructeur accepte maintenant 3 arguments (int, Couleur, int)
+    public ObjectifPoseur(int nombreParcelles, Couleur couleur, int points) {
+        super();
+        this.nombreParcelles = nombreParcelles;
         this.couleur = couleur;
+        this.points = points;
     }
 
     @Override
     public int getPoints() {
-        return 2; // Score fixe pour ce Milestone
+        return points; // On retourne les vrais points
     }
 
     @Override
     public boolean valider(GameState gameState, Bot bot) {
-        int compteur = 0;
-        // On parcourt toutes les parcelles posées sur le plateau
-        for (Parcelle p : gameState.getPlateau().getParcellesMap().values()) {
-            if (p.getCouleur() == this.couleur) {
-                compteur++;
+        int count = 0;
+        Map<Position, Parcelle> parcelles = gameState.getPlateau().getParcellesMap();
+        for (Parcelle p : parcelles.values()) {
+            if (p.getCouleur() == couleur) {
+                count++;
             }
         }
-        // Si on a assez de parcelles de la bonne couleur, c'est gagné
-        return compteur >= nombre;
+        return count >= nombreParcelles;
+    }
+
+    @Override
+    public String toString() {
+        return "Objectif Poseur : " + nombreParcelles + " parcelles " + couleur + " (" + points + " pts)";
     }
 }

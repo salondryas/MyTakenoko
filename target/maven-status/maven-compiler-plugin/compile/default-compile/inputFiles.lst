@@ -1,6 +1,7 @@
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\Action.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\DeplacerJardinier.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\DeplacerPanda.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\ObtenirCanalDirrigation.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\PiocherObjectif.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\actions\PoserParcelle.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\GameEngine.java
@@ -17,7 +18,9 @@ C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\PiocheObjectif.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\objectifs\TypeObjectif.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\Partie.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Arete.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Bambou.java
+C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\CanalDirrigation.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Jardinier.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Panda.java
 C:\Users\ilyas\OneDrive - Université Côte d'Azur\Documents\GitHub\projet2-ps5-25-26-fise-25-26-take-team-q-se\src\main\java\fr\cotedazur\univ\polytech\startingpoint\plateau\Parcelle.java

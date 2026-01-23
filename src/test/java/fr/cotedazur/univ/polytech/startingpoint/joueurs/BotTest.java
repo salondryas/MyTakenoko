@@ -17,30 +17,29 @@ class BotTest {
 
     @BeforeEach
     void setUp() {
-        bot = new Bot("BotTest");
+        bot = new BotRandom("BotTest"); // CORRECTION : BotRandom
         List<Bot> bots = new ArrayList<>();
         bots.add(bot);
 
-        // CORRECTION 1 : Initialisation du GameState
         gameState = new GameState();
         gameState.getJoueurs().addAll(bots);
     }
 
     @Test
     void testJouer() {
-        assertNotNull(bot.jouer(gameState));
+        // CORRECTION : La méthode est void, on ne peut pas faire assertNotNull.
+        // On vérifie juste qu'elle ne lance pas d'exception.
+        assertDoesNotThrow(() -> bot.jouer(gameState));
     }
 
     @Test
     void testChoisirMeilleurObjectif() {
-        // CORRECTION 2 : Ajout du 3ème argument (points) pour ObjectifPoseur
         ObjectifPoseur obj1 = new ObjectifPoseur(2, Couleur.VERT, 3);
-        ObjectifPoseur obj2 = new ObjectifPoseur(3, Couleur.ROSE, 5); // Plus de points
+        ObjectifPoseur obj2 = new ObjectifPoseur(3, Couleur.ROSE, 5);
 
         bot.getInventaire().ajouterObjectif(obj1);
         bot.getInventaire().ajouterObjectif(obj2);
 
-        // Exemple de test (adaptez selon votre logique)
         assertEquals(2, bot.getInventaire().getObjectifs().size());
     }
 }

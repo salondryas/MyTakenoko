@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class InventaireJoueurTest {
@@ -35,11 +37,12 @@ class InventaireJoueurTest {
     @Test
     void gestionBambous() {
         inventaire.ajouterBambou(Couleur.ROSE);
-        assertEquals(1, inventaire.getBambous().size());
-        assertTrue(inventaire.getBambous().contains(Couleur.ROSE));
+        assertEquals(1, inventaire.getTotalNumberOfBambous());
+        Map<Couleur,Integer> dicoBambous = inventaire.getBambous();
+        assertTrue(dicoBambous.get(Couleur.ROSE) != 0);
 
         inventaire.retirerBambou(Couleur.ROSE);
-        assertEquals(0, inventaire.getBambous().size());
+        assertEquals(0, inventaire.getTotalNumberOfBambous());
     }
 
     @Test
@@ -54,17 +57,18 @@ class InventaireJoueurTest {
     @Test
     void testGestionBambous() {
         // Au début c'est vide
-        assertTrue(inventaire.getBambous().isEmpty());
+        assertTrue(inventaire.isBambouEmpty());
 
         // On ajoute un bambou rose
         inventaire.ajouterBambou(Couleur.ROSE);
-        assertEquals(1, inventaire.getBambous().size());
-        assertTrue(inventaire.getBambous().contains(Couleur.ROSE));
+        assertEquals(1, inventaire.getTotalNumberOfBambous());
+        Map<Couleur,Integer> dicoBambous = inventaire.getBambous();
+        assertTrue(dicoBambous.get(Couleur.ROSE) != 0);
 
         // On le retire
         boolean retraitReussi = inventaire.retirerBambou(Couleur.ROSE);
         assertTrue(retraitReussi);
-        assertTrue(inventaire.getBambous().isEmpty());
+        assertTrue(inventaire.isBambouEmpty());
     }
 
     @Test

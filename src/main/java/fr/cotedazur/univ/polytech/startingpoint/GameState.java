@@ -71,6 +71,18 @@ public class GameState {
     public Panda getPanda() { return panda; }       // Getter indispensable
     public Jardinier getJardinier() { return jardinier; } // Getter indispensable
 
+    public Bot determinerMeilleurJoueur() {
+        Bot gagnant = null;
+        int meilleurScore=-1;
+        for (Bot bot : this.getJoueurs()) {
+            if (bot.getScore() > meilleurScore) {
+                meilleurScore = bot.getScore();
+                gagnant = bot;
+            }
+        }
+        return gagnant;
+    }
+
     public void reset() {
         this.plateau = new Plateau();
         this.pioche = new PiocheParcelle();

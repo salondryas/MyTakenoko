@@ -2,36 +2,40 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage.AfficherInventaireJoueur;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InventaireJoueur {
     private int score;
-    private List<Objectif> objectifs;
-    private List<Couleur> bambous;
+    private List<Objectif> objectifs; // Objectifs à réaliser en main
+    private Map<Couleur,Integer> bambous;    // Sections de bambous mangées (stockées par couleur)
     private int nombreObjectifsValides = 0;
     private int nombreCanauxDisponibles; // Nombre de canaux d'irrigation disponibles
 
     public InventaireJoueur() {
         this.score = 0;
         this.objectifs = new ArrayList<>();
-        this.bambous = new ArrayList<>();
         this.nombreCanauxDisponibles = 0;
+
+        this.bambous = new HashMap<>();
+        bambous.put(Couleur.ROSE,0);
+        bambous.put(Couleur.VERT,0);
+        bambous.put(Couleur.JAUNE,0);
     }
 
     public void ajouterObjectif(Objectif objectif) {
         this.objectifs.add(objectif);
     }
 
-    // --- CORRECTION : Méthode pour retirer un objectif validé ---
     public void retirerObjectif(Objectif objectif) {
         this.objectifs.remove(objectif);
     }
-    // ------------------------------------------------------------
 
     public List<Objectif> getObjectifs() {
-        // Retourne une copie pour protéger la liste (ce qui a causé le bug avant)
         return new ArrayList<>(objectifs);
     }
 
@@ -44,15 +48,29 @@ public class InventaireJoueur {
     }
 
     public void ajouterBambou(Couleur couleur) {
-        bambous.add(couleur);
+        int nombreBambouCouleur = bambous.get(couleur);
+        bambous.put(couleur, ++nombreBambouCouleur);
     }
 
     public boolean retirerBambou(Couleur couleur) {
-        return bambous.remove(couleur);
+        int nombreBambouCouleur = bambous.get(couleur);
+        if (nombreBambouCouleur <= 0) {
+            return false;
+        }
+        bambous.put(couleur, --nombreBambouCouleur);
+        return true;
     }
 
-    public List<Couleur> getBambous() {
-        return new ArrayList<>(bambous);
+    public Map<Couleur,Integer> getBambous() {
+        return bambous;
+    }
+
+    public boolean isBambouEmpty() {
+        return (bambous.get(Couleur.ROSE) == 0 && bambous.get(Couleur.VERT) == 0 && bambous.get(Couleur.JAUNE) == 0);
+    }
+
+    public int getTotalNumberOfBambous() {
+        return bambous.get(Couleur.ROSE)+bambous.get(Couleur.VERT)+bambous.get(Couleur.JAUNE);
     }
 
     public void incrementerObjectifsValides() {
@@ -63,20 +81,10 @@ public class InventaireJoueur {
         return this.nombreObjectifsValides;
     }
 
-    /**
-     * Ajoute une irrigation à l'inventaire du joueur.
-     * Appelée lorsque l'action "irrigation" est choisie.
-     */
     public void ajouterIrrigation() {
         nombreCanauxDisponibles++;
     }
 
-    /**
-     * Retire une irrigation de l'inventaire.
-     * Appelée quand un canal est placé avec succès.
-     * 
-     * return true si une irrigation était disponible, false sinon
-     */
     public boolean retirerIrrigation() {
         if (nombreCanauxDisponibles > 0) {
             nombreCanauxDisponibles--;
@@ -95,6 +103,7 @@ public class InventaireJoueur {
 
     @Override
     public String toString() {
-        return "Score: " + score + ", Bambous: " + bambous;
+        AfficherInventaireJoueur aij = new AfficherInventaireJoueur(this);
+        return aij.afficher();
     }
 }

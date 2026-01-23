@@ -39,7 +39,14 @@ public class ObjectifJardinier extends Objectif {
         }
         return false;
     }
+    // Ajoutez ces getters s'ils n'existent pas encore
+    public Couleur getCouleur() {
+        return couleur;
+    }
 
+    public int getTaille() {
+        return tailleRequise;
+    }
     @Override
     public String toString() {
         return "Objectif Jardinier : Bambou " + couleur + " de taille " + tailleRequise + " (" + points + "pts)";

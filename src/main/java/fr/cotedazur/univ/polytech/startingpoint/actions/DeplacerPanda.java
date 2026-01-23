@@ -21,22 +21,20 @@ public class DeplacerPanda implements Action {
     public void appliquer(GameState gameState, Bot bot) {
         Plateau plateau = gameState.getPlateau();
 
-        // 1. Vérification : y a-t-il du bambou à manger ?
+        // CORRECTION 1 : On déplace le panda d'abord (C'est l'but de l'action !)
+        // Cette ligne manquait, c'est pour ça que le test échouait.
+        panda.setPositionPanda(destination);
+
+        // CORRECTION 2 : Ensuite, on regarde s'il y a à manger sur la case d'arrivée
         if (plateau.getNombreDeSectionsAPosition(destination) > 0) {
             Parcelle parcelle = plateau.getParcelle(destination);
-
-            // 2. On récupère la couleur AVANT de manger (pour l'inventaire du bot)
-            // Note: On assume que la couleur du bambou est la même que la parcelle
             Couleur couleurBambou = parcelle.getCouleur();
 
-            // 3. Le Panda mange (retire une section sur le plateau)
+            // Le Panda mange
             panda.mangerBambou(destination, plateau);
 
-            // 4. Le Bot gagne le bambou dans son inventaire
+            // Le Bot gagne le bambou
             bot.getInventaire().ajouterBambou(couleurBambou);
-
-            // Optionnel : Message de debug
-            // System.out.println("Miam ! Le panda a mangé un bambou " + couleurBambou);
         }
     }
 

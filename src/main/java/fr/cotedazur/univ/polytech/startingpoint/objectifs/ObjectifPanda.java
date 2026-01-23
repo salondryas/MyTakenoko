@@ -5,6 +5,7 @@ import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 
 import java.util.List;
+import java.util.Map;
 
 public class ObjectifPanda extends Objectif {
     private final Couleur couleur;
@@ -27,18 +28,12 @@ public class ObjectifPanda extends Objectif {
 
     @Override
     public boolean valider(GameState gameState, Bot bot) {
-        // 1. Compter les bambous de la bonne couleur dans l'inventaire
-        int compteur = 0;
-        List<Couleur> bambousDuBot = bot.getInventaire().getBambous();
+        Map<Couleur,Integer> bambousDuBot = bot.getInventaire().getBambous();
 
-        for (Couleur c : bambousDuBot) {
-            if (c == this.couleur) {
-                compteur++;
-            }
-        }
+        int nombreDeBambousDeLaBonneCouleur = bambousDuBot.get(this.couleur);
 
         // 2. Si on en a assez, on valide ET on consomme
-        if (compteur >= nombreRequis) {
+        if (nombreDeBambousDeLaBonneCouleur >= nombreRequis) {
             // On retire les bambous utilisés
             for (int i = 0; i < nombreRequis; i++) {
                 bot.getInventaire().retirerBambou(this.couleur);

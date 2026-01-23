@@ -3,6 +3,7 @@ package fr.cotedazur.univ.polytech.startingpoint.plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage.AfficherEtatPlateau;
 
 import java.util.*;
 
@@ -12,8 +13,8 @@ public class Plateau {
 
     private final Map<Position, Parcelle> parcelles;
 
-    private Set<CanalDirrigation> canaux; // Ensemble des canaux placés
-    private Set<Position> parcellesIrriguees; // Recensement des parcelles irriguées
+    private Set<CanalDirrigation> canaux;
+    private Set<Position> parcellesIrriguees;
 
     public Plateau() {
         parcelles = new HashMap<>();
@@ -25,7 +26,6 @@ public class Plateau {
 
     public void placerParcelle(Parcelle parcelle, Position position) {
         parcelles.put(position, parcelle);
-        // Irrigation automatique si adjacente à l'étang
         if (position.estAdjacent(POSITION_ORIGINE)) {
             parcelle.triggerIrrigation();
             parcellesIrriguees.add(position);
@@ -68,10 +68,8 @@ public class Plateau {
         for (PositionsRelatives direction : PositionsRelatives.values()) {
             if (direction != PositionsRelatives.ZERO) {
                 Position voisin = position.add(direction.getPosition());
-                if (voisin.equals(POSITION_ORIGINE))
-                    return true;
-                if (parcelles.containsKey(voisin))
-                    nbVoisinsOccupes++;
+                if (voisin.equals(POSITION_ORIGINE)) return true;
+                if (parcelles.containsKey(voisin)) nbVoisinsOccupes++;
             }
         }
         return nbVoisinsOccupes >= 2;
@@ -81,12 +79,8 @@ public class Plateau {
         return new HashMap<>(parcelles);
     }
 
-    // --- AJOUTS OBLIGATOIRES POUR PANDA/JARDINIER ---
+    // --- PANDA / JARDINIER ---
 
-    /**
-     * Calcule les déplacements possibles en ligne droite depuis une position.
-     * Utilisé par le Panda et le Jardinier.
-     */
     public List<Position> getTrajetsLigneDroite(Position depart) {
         List<Position> destinationsPossibles = new ArrayList<>();
         for (PositionsRelatives direction : PositionsRelatives.values()) {
@@ -94,7 +88,6 @@ public class Plateau {
                 Position vecteur = direction.getPosition();
                 Position testPos = depart.add(vecteur);
 
-                // On avance tant qu'il y a une parcelle (on ne peut pas traverser un trou).
                 while (parcelles.containsKey(testPos)) {
                     destinationsPossibles.add(testPos);
                     testPos = testPos.add(vecteur);
@@ -104,9 +97,6 @@ public class Plateau {
         return destinationsPossibles;
     }
 
-    /**
-     * Méthode utilitaire pour le Panda : savoir s'il y a du bambou à manger ici.
-     */
     public int getNombreDeSectionsAPosition(Position pos) {
         Parcelle parcelle = parcelles.get(pos);
         if (parcelle != null) {
@@ -123,32 +113,16 @@ public class Plateau {
         return positionsOccupees;
     }
 
-    /**
-     * Récupère la liste des parcelles adjacentes à une position donnée
-     * qui ont exactement la même couleur que la parcelle située à cette position.
-     */
-    public java.util.List<Parcelle> getParcellesVoisinesMemeCouleur(
-            fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position positionCible) {
-        java.util.List<Parcelle> voisinesMemeCouleur = new java.util.ArrayList<>();
-
-        // 1. On récupère la parcelle centrale
+    public List<Parcelle> getParcellesVoisinesMemeCouleur(Position positionCible) {
+        List<Parcelle> voisinesMemeCouleur = new ArrayList<>();
         Parcelle parcelleCentrale = getParcelle(positionCible);
-        if (parcelleCentrale == null)
-            return voisinesMemeCouleur; // Sécurité
+        if (parcelleCentrale == null) return voisinesMemeCouleur;
 
-        // 2. CORRECTION : On parcourt l'Enum directement
         for (PositionsRelatives direction : PositionsRelatives.values()) {
-            // On ignore la position ZERO (qui est la case elle-même).
             if (direction != PositionsRelatives.ZERO) {
-
-                // On calcule la position de la voisine en ajoutant le vecteur de direction
-                fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position posVoisine = positionCible
-                        .add(direction.getPosition());
-
-                // 3. On récupère la parcelle voisine
+                Position posVoisine = positionCible.add(direction.getPosition());
                 Parcelle voisine = getParcelle(posVoisine);
 
-                // 4. On vérifie : elle existe ET elle a la même couleur
                 if (voisine != null && voisine.getCouleur() == parcelleCentrale.getCouleur()) {
                     voisinesMemeCouleur.add(voisine);
                 }
@@ -157,141 +131,79 @@ public class Plateau {
         return voisinesMemeCouleur;
     }
 
-    /**
-     * Vérifie si un canal peut être placé entre deux positions.
-     * Conditions :
-     * - Les positions doivent être adjacentes
-     * - Ne peut pas être sur une arête de l'étang
-     * - Doit être connecté au réseau (chemin de canaux depuis l'étang)
-     */
+    // --- IRRIGATION REFACTORISÉE (Cognitive Complexity Reduced) ---
+
     public boolean peutPlacerCanal(Position p1, Position p2) {
-        if (!p1.estAdjacent(p2)) {
-            return false;
-        }
-
-        if (p1.equals(POSITION_ORIGINE) || p2.equals(POSITION_ORIGINE)) {
-            return false;
-        }
-
+        if (!p1.estAdjacent(p2)) return false;
+        if (p1.equals(POSITION_ORIGINE) || p2.equals(POSITION_ORIGINE)) return false;
         return estConnecteAuReseau(p1, p2);
     }
 
     /**
-     * Vérifie si une arête (p1, p2) est connectée au réseau d'irrigation.
-     * Utilise un parcours BFS depuis l'étang.
-     */
-    /*
-     * private boolean estConnecteAuReseau(Position p1, Position p2) {
-     * if (p1.estAdjacent(POSITION_ORIGINE) || p2.estAdjacent(POSITION_ORIGINE)) {
-     * return true;
-     * }
-     * 
-     * Set<Position> positionsAccessibles = new HashSet<>();
-     * Queue<Position> aExplorer = new LinkedList<>();
-     * 
-     * aExplorer.add(POSITION_ORIGINE);
-     * positionsAccessibles.add(POSITION_ORIGINE);
-     * 
-     * while (!aExplorer.isEmpty()) {
-     * Position courante = aExplorer.poll();
-     * 
-     * for (CanalDirrigation canal : canaux) {
-     * Arete arete = canal.getPosition();
-     * 
-     * if (arete.touchePosition(courante)) {
-     * Position autre = arete.getParcelle1().equals(courante)
-     * ? arete.getParcelle2()
-     * : arete.getParcelle1();
-     * 
-     * if (!positionsAccessibles.contains(autre)) {
-     * positionsAccessibles.add(autre);
-     * aExplorer.add(autre);
-     * }
-     * }
-     * }
-     * }
-     * 
-     * return positionsAccessibles.contains(p1) ||
-     * positionsAccessibles.contains(p2);
-     * }
+     * Vérifie la connexion au réseau via un BFS.
+     * Complexité réduite par découpage en sous-méthodes.
      */
     private boolean estConnecteAuReseau(Position p1, Position p2) {
+        // Cas trivial : adjacent à l'étang
         if (p1.estAdjacent(POSITION_ORIGINE) || p2.estAdjacent(POSITION_ORIGINE)) {
             return true;
         }
 
-        Set<Position> positionsAccessibles = new HashSet<>();
-        Queue<Position> aExplorer = new LinkedList<>();
+        // Initialisation du BFS
+        Set<Position> accessibles = initialiserRecherche();
+        Queue<Position> aExplorer = new LinkedList<>(accessibles);
 
-        // ========== ANCIEN CODE (BUGGÉ) ==========
-        // aExplorer.add(PARCELLE_ORIGINE);
-        // positionsAccessibles.add(PARCELLE_ORIGINE);
-        // =========================================
-
-        // ========== NOUVEAU CODE (CORRIGÉ) ==========
-        aExplorer.add(POSITION_ORIGINE);
-        positionsAccessibles.add(POSITION_ORIGINE);
-
-        // AJOUT: Ajouter toutes les parcelles déjà irriguées comme points de départ
-        for (Position posIrriguee : parcellesIrriguees) {
-            if (!positionsAccessibles.contains(posIrriguee)) {
-                positionsAccessibles.add(posIrriguee);
-                aExplorer.add(posIrriguee);
-            }
-        }
-        // ============================================
-
-        // Le reste du BFS est identique...
+        // Boucle principale du BFS
         while (!aExplorer.isEmpty()) {
             Position courante = aExplorer.poll();
+            explorerVoisins(courante, accessibles, aExplorer);
+        }
 
-            for (CanalDirrigation canal : canaux) {
-                Arete arete = canal.getPosition();
+        return accessibles.contains(p1) || accessibles.contains(p2);
+    }
 
-                if (arete.touchePosition(courante)) {
-                    Position autre = arete.getParcelle1().equals(courante)
-                            ? arete.getParcelle2()
-                            : arete.getParcelle1();
+    private Set<Position> initialiserRecherche() {
+        Set<Position> accessibles = new HashSet<>();
+        accessibles.add(POSITION_ORIGINE);
+        // On part aussi de tout ce qui est déjà irrigué
+        accessibles.addAll(parcellesIrriguees);
+        return accessibles;
+    }
 
-                    if (!positionsAccessibles.contains(autre)) {
-                        positionsAccessibles.add(autre);
-                        aExplorer.add(autre);
-                    }
+    private void explorerVoisins(Position courante, Set<Position> accessibles, Queue<Position> aExplorer) {
+        for (CanalDirrigation canal : canaux) {
+            Arete arete = canal.getPosition();
+
+            if (arete.touchePosition(courante)) {
+                Position voisin = recupererAutreExtremite(arete, courante);
+
+                if (!accessibles.contains(voisin)) {
+                    accessibles.add(voisin);
+                    aExplorer.add(voisin);
                 }
             }
         }
-
-        return positionsAccessibles.contains(p1) || positionsAccessibles.contains(p2);
     }
 
-    /**
-     * Place un canal d'irrigation entre deux parcelles.
-     * Déclenche l'irrigation sur toutes les parcelles non-irriguées touchées.
-     * return true si le placement a réussi, false sinon
-     */
+    private Position recupererAutreExtremite(Arete arete, Position courante) {
+        return arete.getParcelle1().equals(courante)
+                ? arete.getParcelle2()
+                : arete.getParcelle1();
+    }
+
     public boolean placerCanal(Position p1, Position p2) {
-        if (!peutPlacerCanal(p1, p2)) {
-            return false;
-        }
+        if (!peutPlacerCanal(p1, p2)) return false;
 
         CanalDirrigation nouveauCanal = new CanalDirrigation(p1, p2);
         canaux.add(nouveauCanal);
-
         irriguerParcellesTouchees(nouveauCanal);
-
         return true;
     }
 
-    /**
-     * Irrigue toutes les parcelles non-irriguées touchées par un canal.
-     * Méthode générique qui gère n'importe quel nombre de parcelles.
-     */
     private void irriguerParcellesTouchees(CanalDirrigation canal) {
         Arete arete = canal.getPosition();
-
         for (Position pos : arete.getPositions()) {
             Parcelle parcelle = parcelles.get(pos);
-
             if (parcelle != null && !parcelle.estIrriguee()) {
                 parcelle.triggerIrrigation();
                 parcellesIrriguees.add(pos);
@@ -305,5 +217,11 @@ public class Plateau {
 
     public Set<CanalDirrigation> getCanaux() {
         return new HashSet<>(canaux);
+    }
+
+    @Override
+    public String toString() {
+        AfficherEtatPlateau aep = new AfficherEtatPlateau(this);
+        return aep.afficher();
     }
 }

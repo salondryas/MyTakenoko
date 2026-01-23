@@ -1,79 +1,77 @@
 package fr.cotedazur.univ.polytech.startingpoint;
 
-import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifJardinier;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifPanda;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifPoseur;
+import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotJardinier;
+import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotRandom;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage.AffichageFinPartie;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Partie {
     private GameState gameState;
+    static final int OBJECTIFS_POUR_GAGNER = 3; // Condition d'arrêt demandée
 
     public Partie() {
+        this.gameState = new GameState();
         List<Bot> bots = new ArrayList<>();
-        Bot bot1 = new Bot("Player 1");
-        Bot bot2 = new Bot("Player 2");
-        bots.add(bot1);
-        bots.add(bot2);
 
-        // --- CORRECTION : AJOUT DES POINTS DANS LES CONSTRUCTEURS ---
+        // --- CONFIGURATION DU MATCH ---
 
-        // Bot 1 :
-        // 3 parcelles VERTES = 3 points
-        bot1.getInventaire().ajouterObjectif(new ObjectifPoseur(3, Couleur.VERT, 3));
-        // Bambou JAUNE taille 4 = 4 points
-        bot1.getInventaire().ajouterObjectif(new ObjectifJardinier(Couleur.JAUNE, 4, 4));
-        // 2 bambous ROSES = 4 points
-        bot1.getInventaire().ajouterObjectif(new ObjectifPanda(4, Couleur.ROSE, 2));
+        // Joueur 1 : Le Bot Aléatoire (L'outsider)
+        Bot botRandom = new BotRandom("Bot Random");
+        botRandom.setCouleur(Couleur.ROSE); // Juste pour l'affichage si besoin
 
-        // Bot 2 :
-        bot2.getInventaire().ajouterObjectif(new ObjectifPoseur(3, Couleur.JAUNE, 3));
-        bot2.getInventaire().ajouterObjectif(new ObjectifJardinier(Couleur.ROSE, 4, 4));
-        bot2.getInventaire().ajouterObjectif(new ObjectifPanda(4, Couleur.VERT, 2));
+        // Joueur 2 : Le Bot Jardinier (Le favori)
+        Bot botJardinier = new BotJardinier("Bot Jardinier");
+        botJardinier.setCouleur(Couleur.VERT);
 
-        this.gameState = new GameState(); // Constructeur vide
-        this.gameState.getJoueurs().addAll(bots); // Ajout manuel
+        bots.add(botRandom);
+        bots.add(botJardinier);
+
+        this.gameState.getJoueurs().addAll(bots);
     }
 
     public void jouer() {
         int tour = 1;
         boolean partieTerminee = false;
 
-        // On joue tant que personne n'a gagné ET qu'il reste des tuiles (ou que la pioche est vide mais qu'on finit le tour)
-        // Note: gameState.getPioche().getSize() > 0 est une sécurité, mais le jeu peut continuer un peu après.
-        while (!partieTerminee && tour < 100) { // Sécurité anti-boucle infinie
+        System.out.println(" DÉBUT DE LA PARTIE : " + OBJECTIFS_POUR_GAGNER + " objectifs pour gagner !");
+
+        // Sécurité anti-boucle infinie (1000 tours max)
+        while (!partieTerminee && tour < 1000) {
             System.out.println("\n--- Tour " + tour + " ---");
 
             for (Bot bot : gameState.getJoueurs()) {
-                Action action = bot.jouer(gameState);
+                // 1. Le Bot joue (choisit et exécute son action)
+                bot.jouer(gameState);
 
-                if (action != null) {
-                    System.out.println(bot.getNom() + " " + action.toString()); // 1. On annonce
-                    action.appliquer(gameState, bot); // 2. On exécute (les logs de pousse s'afficheront ici)
-                    bot.verifierObjectifs(gameState);
-                } else {
-                    System.out.println(bot.getNom() + " ne peut rien faire ce tour-ci.");
-                }
+                // 2. On vérifie s'il a validé des objectifs après son action
+                bot.verifierObjectifs(gameState);
 
-                if (bot.getNombreObjectifsValides() >= 2) { // Victoire à 2 objectifs pour le test
-                    System.out.println( bot.getNom() + " a validé 2 objectifs ! Fin de la partie.");
+                // Affichage optionnel du score courant
+                // System.out.println("   > " + bot.getNom() + " : " + bot.getNombreObjectifsValides() + " obj.");
+
+                // 3. Condition de Victoire
+                if (bot.getNombreObjectifsValides() >= OBJECTIFS_POUR_GAGNER) {
+                    System.out.println(" VICTOIRE ! " + bot.getNom() + " a validé " + OBJECTIFS_POUR_GAGNER + " objectifs !");
                     partieTerminee = true;
                     break;
                 }
             }
             tour++;
         }
+
+        if (tour >= 1000) {
+            System.out.println(" La partie a été arrêtée (Trop longue).");
+        }
+
         afficherResultats();
     }
 
     private void afficherResultats() {
-        System.out.println("\n--- Résultats finaux ---");
-        for (Bot bot : gameState.getJoueurs()) {
-            System.out.println(bot.getNom() + " - Score : " + bot.getScore() + " pts (" + bot.getNombreObjectifsValides() + " obj. validés)");
-        }
+        AffichageFinPartie afp = new AffichageFinPartie(gameState);
+        System.out.println(afp.afficher());
     }
 }

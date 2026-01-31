@@ -1,12 +1,14 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifPoseur;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,29 +19,51 @@ class BotTest {
 
     @BeforeEach
     void setUp() {
-        bot = new BotRandom("BotTest"); // CORRECTION : BotRandom
-        List<Bot> bots = new ArrayList<>();
-        bots.add(bot);
+        // CORRECTION 1 : On instancie une classe concrète (BotRandom par exemple)
+        // car 'Bot' est abstraite.
+        bot = new BotRandom("BotTest");
 
-        gameState = new GameState();
-        gameState.getJoueurs().addAll(bots);
+        // On initialise le GameState avec ce bot
+        gameState = new GameState(List.of(bot));
     }
 
     @Test
     void testJouer() {
-        // CORRECTION : La méthode est void, on ne peut pas faire assertNotNull.
-        // On vérifie juste qu'elle ne lance pas d'exception.
-        assertDoesNotThrow(() -> bot.jouer(gameState));
+        // Vérifie que la méthode jouer ne plante pas
+        assertDoesNotThrow(() -> {
+            bot.jouer(gameState);
+        });
     }
 
     @Test
-    void testChoisirMeilleurObjectif() {
-        ObjectifPoseur obj1 = new ObjectifPoseur(2, Couleur.VERT, 3);
-        ObjectifPoseur obj2 = new ObjectifPoseur(3, Couleur.ROSE, 5);
+    void testVerifierObjectifs_ValidationEtSuppression() {
+        // 1. On donne un objectif au bot
+        // CORRECTION 2 : Constructeur à 3 arguments (Points, Nombre, Couleur)
+        // Exemple : 2 points pour 2 parcelles VERTES
+        ObjectifParcelle obj = new ObjectifParcelle(2, 2, Couleur.VERT);
+        bot.getInventaire().ajouterObjectif(obj);
 
-        bot.getInventaire().ajouterObjectif(obj1);
-        bot.getInventaire().ajouterObjectif(obj2);
+        // Vérif avant : 1 objectif dans la liste, 0 validé
+        assertEquals(1, bot.getInventaire().getObjectifs().size());
+        assertEquals(0, bot.getNombreObjectifsValides());
 
-        assertEquals(2, bot.getInventaire().getObjectifs().size());
+        // 2. On prépare le plateau pour valider (on pose 2 parcelles vertes)
+        Plateau plateau = gameState.getPlateau();
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), new Position(1, -1, 0));
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), new Position(1, 0, -1));
+
+        // 3. On lance la vérification
+        bot.verifierObjectifs(gameState);
+
+        // 4. VERIFICATIONS CRUCIALES (Mises à jour)
+
+        // Le bot doit avoir gagné les points (ici 2 points)
+        assertEquals(2, bot.getScore());
+
+        // L'objectif doit avoir été RETIRÉ de la liste (pour ne pas être revalidé)
+        assertEquals(0, bot.getInventaire().getObjectifs().size(), "L'objectif validé doit être retiré de l'inventaire");
+
+        // Le compteur d'objectifs validés doit être à 1
+        assertEquals(1, bot.getNombreObjectifsValides());
     }
 }

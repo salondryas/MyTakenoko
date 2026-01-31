@@ -7,22 +7,28 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class ObjectifPandaTest {
 
     Bot bot;
-    GameState gameState; // On peut mettre null si non utilisé dans valider()
+    GameState gameState;
 
     @BeforeEach
     void setUp() {
+        // 1. On instancie un bot concret (Bot est abstrait)
         bot = new BotJardinier("JardinierTest");
-        gameState = new GameState(); // Ou null selon ton implémentation
+
+        // 2. CORRECTION : GameState attend une List<Bot> dans son constructeur
+        gameState = new GameState(List.of(bot));
     }
 
     @Test
     void testValiderObjectifPandaSucces() {
         // Objectif = Manger 2 Bambous Verts
+        // (Utilise le constructeur "manuel" ajouté précédemment)
         ObjectifPanda objectif = new ObjectifPanda(4, Couleur.VERT, 2);
 
         // On donne exactement ce qu'il faut au bot
@@ -78,10 +84,12 @@ class ObjectifPandaTest {
 
         assertTrue(valide, "L'objectif doit être validé même si on a plus de bambous que requis.");
 
-        // On suppose que ta liste de bambous permet de compter ou filtrer
-        long nbVertsRestants = bot.getInventaire().getBambous().get(Couleur.VERT);
+        // On vérifie le reste : il doit rester 1 Vert et 1 Rose
+        int nbVertsRestants = bot.getInventaire().getBambous().get(Couleur.VERT);
+        int nbRosesRestants = bot.getInventaire().getBambous().get(Couleur.ROSE);
 
         assertEquals(1, nbVertsRestants, "Il doit rester 1 bambou vert (3 - 2 consommés).");
+        assertEquals(1, nbRosesRestants, "Le bambou rose ne doit pas être touché.");
         assertEquals(2, bot.getInventaire().getTotalNumberOfBambous(), "La taille totale de l'inventaire doit être de 2.");
     }
 

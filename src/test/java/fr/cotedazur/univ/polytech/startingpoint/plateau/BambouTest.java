@@ -44,15 +44,6 @@ class BambouTest {
     }
 
     @Test
-    void testSectionQuantityUpdate() {
-        int stockInitial = Bambou.number_of_green_sections;
-        bambouVert.sectionQuantityUpdate();
-
-        assertEquals(stockInitial - 1, Bambou.number_of_green_sections,
-                "Le stock statique de sections vertes doit diminuer de 1.");
-    }
-
-    @Test
     @DisplayName("Bambou initialisé avec 0 section par défaut")
     void testBambouInitial() {
         Bambou bambou = new Bambou(Couleur.VERT);

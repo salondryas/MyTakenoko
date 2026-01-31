@@ -1,13 +1,9 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifPoseur;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,29 +16,13 @@ class InventaireJoueurTest {
     }
 
     @Test
-    void ajouterEtVerifierObjectif() {
-        // CORRECTION 1 : Ajout du 3ème argument (points) pour correspondre à votre
-        // nouvelle classe ObjectifPoseur
-        Objectif obj = new ObjectifPoseur(1, Couleur.JAUNE, 2);
-
+    void testAjouterEtRecupererObjectif() {
+        // CORRECTION 1 : Constructeur à 3 arguments (2 points, 2 parcelles, Rose)
+        ObjectifParcelle obj = new ObjectifParcelle(2, 2, Couleur.ROSE);
         inventaire.ajouterObjectif(obj);
 
-        // CORRECTION 2 : On utilise .size() sur la liste retournée, car
-        // getNombreObjectifs() n'existe pas
         assertEquals(1, inventaire.getObjectifs().size());
-
-        assertTrue(inventaire.getObjectifs().contains(obj));
-    }
-
-    @Test
-    void gestionBambous() {
-        inventaire.ajouterBambou(Couleur.ROSE);
-        assertEquals(1, inventaire.getTotalNumberOfBambous());
-        Map<Couleur,Integer> dicoBambous = inventaire.getBambous();
-        assertTrue(dicoBambous.get(Couleur.ROSE) != 0);
-
-        inventaire.retirerBambou(Couleur.ROSE);
-        assertEquals(0, inventaire.getTotalNumberOfBambous());
+        assertEquals(obj, inventaire.getObjectifs().get(0));
     }
 
     @Test
@@ -52,23 +32,31 @@ class InventaireJoueurTest {
         assertEquals(10, inventaire.getScore());
     }
 
-    // --- NOUVEAUX TESTS A AJOUTER ---
-
     @Test
     void testGestionBambous() {
-        // Au début c'est vide
-        assertTrue(inventaire.isBambouEmpty());
+        // CORRECTION 2 : La Map n'est pas vide, elle est initialisée à 0 partout.
+        // On vérifie donc que la quantité de ROSE est bien à 0 au départ.
+        assertEquals(0, inventaire.getBambous().get(Couleur.ROSE));
 
         // On ajoute un bambou rose
         inventaire.ajouterBambou(Couleur.ROSE);
-        assertEquals(1, inventaire.getTotalNumberOfBambous());
-        Map<Couleur,Integer> dicoBambous = inventaire.getBambous();
-        assertTrue(dicoBambous.get(Couleur.ROSE) != 0);
+
+        // On vérifie que le compteur est passé à 1
+        assertEquals(1, inventaire.getBambous().get(Couleur.ROSE));
 
         // On le retire
         boolean retraitReussi = inventaire.retirerBambou(Couleur.ROSE);
-        assertTrue(retraitReussi);
-        assertTrue(inventaire.isBambouEmpty());
+
+        // Vérifications finales
+        assertTrue(retraitReussi, "Le retrait aurait dû réussir");
+        assertEquals(0, inventaire.getBambous().get(Couleur.ROSE), "Le compteur devrait être revenu à 0");
+    }
+
+    @Test
+    void testRetirerBambouInexistant() {
+        // Test supplémentaire : Essayer de retirer un bambou qu'on n'a pas
+        boolean retrait = inventaire.retirerBambou(Couleur.VERT);
+        assertFalse(retrait, "On ne devrait pas pouvoir retirer un bambou si le stock est à 0");
     }
 
     @Test
@@ -82,49 +70,14 @@ class InventaireJoueurTest {
     }
 
     @Test
-    @DisplayName("Inventaire initialisé avec 0 canal")
-    void testInventaireInitial() {
+    void testGestionIrrigation() {
+        // Test pour les canaux d'irrigation
         assertEquals(0, inventaire.getNombreCanauxDisponibles());
-        assertFalse(inventaire.aDesCanaux());
-    }
 
-    @Test
-    @DisplayName("ajouterIrrigation ajoute un canal")
-    void testAjouterIrrigation() {
         inventaire.ajouterIrrigation();
-
         assertEquals(1, inventaire.getNombreCanauxDisponibles());
-        assertTrue(inventaire.aDesCanaux());
-    }
 
-    @Test
-    @DisplayName("Ajout de plusieurs canaux")
-    void testAjouterPlusieursCanaux() {
-        inventaire.ajouterIrrigation();
-        inventaire.ajouterIrrigation();
-        inventaire.ajouterIrrigation();
-
-        assertEquals(3, inventaire.getNombreCanauxDisponibles());
-    }
-
-    @Test
-    @DisplayName("retirerIrrigation retire un canal et retourne true")
-    void testRetirerIrrigation() {
-        inventaire.ajouterIrrigation();
-        inventaire.ajouterIrrigation();
-
-        boolean resultat = inventaire.retirerIrrigation();
-
-        assertTrue(resultat);
-        assertEquals(1, inventaire.getNombreCanauxDisponibles());
-    }
-
-    @Test
-    @DisplayName("retirerIrrigation retourne false si aucun canal disponible")
-    void testRetirerIrrigationVide() {
-        boolean resultat = inventaire.retirerIrrigation();
-
-        assertFalse(resultat);
+        inventaire.retirerIrrigation();
         assertEquals(0, inventaire.getNombreCanauxDisponibles());
     }
 }

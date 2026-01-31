@@ -1,9 +1,9 @@
 package fr.cotedazur.univ.polytech.startingpoint;
 
+import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotJardinier;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotRandom;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage.AffichageFinPartie;
 
 import java.util.ArrayList;
@@ -11,26 +11,20 @@ import java.util.List;
 
 public class Partie {
     private GameState gameState;
-    static final int OBJECTIFS_POUR_GAGNER = 3; // Condition d'arrêt demandée
+    static final int OBJECTIFS_POUR_GAGNER = 3;
 
     public Partie() {
-        this.gameState = new GameState();
+        // 1. On prépare la liste des bots AVANT de créer le GameState
         List<Bot> bots = new ArrayList<>();
 
-        // --- CONFIGURATION DU MATCH ---
+        // Joueur 1 : Bot Random
+        bots.add(new BotRandom("Bot Random"));
+        // Joueur 2 : Bot Jardinier
+        bots.add(new BotJardinier("Bot Jardinier"));
 
-        // Joueur 1 : Le Bot Aléatoire (L'outsider)
-        Bot botRandom = new BotRandom("Bot Random");
-        botRandom.setCouleur(Couleur.ROSE); // Juste pour l'affichage si besoin
-
-        // Joueur 2 : Le Bot Jardinier (Le favori)
-        Bot botJardinier = new BotJardinier("Bot Jardinier");
-        botJardinier.setCouleur(Couleur.VERT);
-
-        bots.add(botRandom);
-        bots.add(botJardinier);
-
-        this.gameState.getJoueurs().addAll(bots);
+        // 2. On passe la liste au constructeur de GameState
+        // C'est ici que l'erreur est corrigée (on passe 1 argument)
+        this.gameState = new GameState(bots);
     }
 
     public void jouer() {
@@ -39,24 +33,33 @@ public class Partie {
 
         System.out.println(" DÉBUT DE LA PARTIE : " + OBJECTIFS_POUR_GAGNER + " objectifs pour gagner !");
 
-        // Sécurité anti-boucle infinie (1000 tours max)
         while (!partieTerminee && tour < 1000) {
             System.out.println("\n--- Tour " + tour + " ---");
 
+            // Boucle sur chaque Joueur
             for (Bot bot : gameState.getJoueurs()) {
-                // 1. Le Bot joue (choisit et exécute son action)
-                bot.jouer(gameState);
 
-                // 2. On vérifie s'il a validé des objectifs après son action
-                bot.verifierObjectifs(gameState);
+                // 1. Le bot choisit ses 2 actions
+                List<Action> actionsJouees = bot.jouer(gameState);
 
-                // Affichage optionnel du score courant
-                // System.out.println("   > " + bot.getNom() + " : " + bot.getNombreObjectifsValides() + " obj.");
+                // 2. On exécute les actions une par une
+                for (Action action : actionsJouees) {
+                    System.out.println(bot.getNom() + " " + action.toString());
+                    action.appliquer(gameState, bot);
 
-                // 3. Condition de Victoire
-                if (bot.getNombreObjectifsValides() >= OBJECTIFS_POUR_GAGNER) {
-                    System.out.println(" VICTOIRE ! " + bot.getNom() + " a validé " + OBJECTIFS_POUR_GAGNER + " objectifs !");
-                    partieTerminee = true;
+                    // 3. Vérification des objectifs après CHAQUE action
+                    bot.verifierObjectifs(gameState);
+
+                    // Condition de victoire
+                    if (bot.getNombreObjectifsValides() >= OBJECTIFS_POUR_GAGNER) {
+                        System.out.println(" VICTOIRE ! " + bot.getNom() + " a validé " + OBJECTIFS_POUR_GAGNER + " objectifs !");
+                        partieTerminee = true;
+                        break; // On sort de la boucle des Actions
+                    }
+                }
+
+                // IMPORTANT : Si la partie est finie, on sort de la boucle des Joueurs
+                if (partieTerminee) {
                     break;
                 }
             }

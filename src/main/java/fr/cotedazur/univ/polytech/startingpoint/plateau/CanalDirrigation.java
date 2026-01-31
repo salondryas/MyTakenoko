@@ -7,9 +7,9 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 /**
  * Représente un canal d'irrigation placé sur une arête entre deux parcelles.
  */
-class CanalDirrigation {
+public class CanalDirrigation {
     private final Arete position;
-    private static int nb_canaux = 20;
+    private static int nbCanaux = 20;
 
     public CanalDirrigation(Arete position) {
         this.position = position;

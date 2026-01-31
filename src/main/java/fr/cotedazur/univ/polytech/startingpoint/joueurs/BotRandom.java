@@ -10,9 +10,9 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class BotRandom extends Bot {
-
     private final Random random;
 
     public BotRandom(String nom) {
@@ -21,72 +21,60 @@ public class BotRandom extends Bot {
     }
 
     @Override
-    public void jouer(GameState gameState) {
+    protected Action choisirUneAction(GameState gameState, Set<TypeAction> typesInterdits) {
         Plateau plateau = gameState.getPlateau();
         PiocheParcelle pioche = gameState.getPioche();
 
-        // On essaie de jouer (boucle de sécurité)
-        for (int i = 0; i < 10; i++) {
-            int choix = random.nextInt(4); // 0, 1, 2, 3
+        // On essaie X fois de trouver une action au hasard qui n'est pas interdite
+        for (int i = 0; i < 20; i++) {
+            int choix = random.nextInt(5); // 0 à 4 (avec Irrigation)
 
             switch (choix) {
                 case 0: // POSER PARCELLE
-                    if (pioche.getSize() > 0 && !plateau.getEmplacementsDisponibles().isEmpty()) {
+                    if (!typesInterdits.contains(TypeAction.POSER_PARCELLE)
+                            && pioche.getSize() > 0
+                            && !plateau.getEmplacementsDisponibles().isEmpty()) {
                         Parcelle p = pioche.piocherParcelle();
                         if (p != null) {
                             List<Position> dispos = plateau.getEmplacementsDisponibles();
                             Position pos = dispos.get(random.nextInt(dispos.size()));
-
-                            // MODIFICATION : Création de l'action séparée pour l'affichage
-                            Action action = new PoserParcelle(new Parcelle(pos, p.getCouleur()), pos);
-                            System.out.println(getNom() + " joue : " + action.toString());
-                            action.appliquer(gameState, this);
-                            return;
+                            return new PoserParcelle(new Parcelle(pos, p.getCouleur()), pos);
                         }
                     }
                     break;
 
                 case 1: // PANDA
-                    List<Position> deplacementsP = plateau.getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
-                    if (!deplacementsP.isEmpty()) {
-                        Position dest = deplacementsP.get(random.nextInt(deplacementsP.size()));
-
-                        // MODIFICATION : Log
-                        Action action = new DeplacerPanda(gameState.getPanda(), dest);
-                        System.out.println(getNom() + " joue : " + action.toString());
-                        action.appliquer(gameState, this);
-                        return;
+                    if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA)) {
+                        List<Position> deplacements = plateau.getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
+                        if (!deplacements.isEmpty()) {
+                            return new DeplacerPanda(gameState.getPanda(), deplacements.get(random.nextInt(deplacements.size())));
+                        }
                     }
                     break;
 
                 case 2: // JARDINIER
-                    List<Position> deplacementsJ = plateau.getTrajetsLigneDroite(gameState.getJardinier().getPosition());
-                    if (!deplacementsJ.isEmpty()) {
-                        Position dest = deplacementsJ.get(random.nextInt(deplacementsJ.size()));
-
-                        // MODIFICATION : Log
-                        Action action = new DeplacerJardinier(gameState.getJardinier(), dest);
-                        System.out.println(getNom() + " joue : " + action.toString());
-                        action.appliquer(gameState, this);
-                        return;
+                    if (!typesInterdits.contains(TypeAction.DEPLACER_JARDINIER)) {
+                        List<Position> deplacements = plateau.getTrajetsLigneDroite(gameState.getJardinier().getPosition());
+                        if (!deplacements.isEmpty()) {
+                            return new DeplacerJardinier(gameState.getJardinier(), deplacements.get(random.nextInt(deplacements.size())));
+                        }
                     }
                     break;
 
                 case 3: // PIOCHER OBJECTIF
-                    int typeChoix = random.nextInt(2);
-                    TypeObjectif type = (typeChoix == 0) ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
+                    if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
+                        TypeObjectif type = (random.nextBoolean()) ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
+                        return new PiocherObjectif(type);
+                    }
+                    break;
 
-                    // MODIFICATION : Log
-                    Action action = new PiocherObjectif(type);
-                    System.out.println(getNom() + " joue : " + action.toString());
-                    action.appliquer(gameState, this);
-                    return;
+                case 4: // PRENDRE IRRIGATION
+                    if (!typesInterdits.contains(TypeAction.PRENDRE_IRRIGATION)) {
+                        return new ObtenirCanalDirrigation();
+                    }
+                    break;
             }
         }
-
-        // Sécurité finale : fallback
-        Action action = new PiocherObjectif(TypeObjectif.JARDINIER);
-        System.out.println(getNom() + " (fallback) joue : " + action.toString());
-        action.appliquer(gameState, this);
+        return null; // Rien trouvé
     }
 }

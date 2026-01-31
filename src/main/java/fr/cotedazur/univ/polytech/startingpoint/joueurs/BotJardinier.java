@@ -13,6 +13,7 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class BotJardinier extends Bot {
 
@@ -21,39 +22,53 @@ public class BotJardinier extends Bot {
     }
 
     @Override
-    public void jouer(GameState gameState) {
-        // 1. ANALYSE : Choisir un objectif Jardinier prioritaire
+    protected Action choisirUneAction(GameState gameState, Set<TypeAction> typesInterdits) {
+
+        // 1. ANALYSE : Quel est mon objectif prioritaire ?
         ObjectifJardinier objectifPrioritaire = choisirMeilleurObjectif();
 
-        // Si aucun objectif Jardinier en main
+        // 2. STRATEGIE "URGENCE" : Si je n'ai pas d'objectif, je dois en piocher un
         if (objectifPrioritaire == null) {
-            // CORRECTION IMPORTANTE : On vérifie si la pioche n'est pas vide AVANT
-            if (!gameState.getPiocheJardinier().estVide()) {
-                Action action = new PiocherObjectif(TypeObjectif.JARDINIER);
-                System.out.println(getNom() + " joue : " + action.toString());
-                action.appliquer(gameState, this);
-            } else {
-                // Si la pioche est vide, on force une autre action pour ne pas bloquer
-                System.out.println(getNom() + " ne peut plus piocher (Pioche vide). Mode Aléatoire activé.");
-                jouerAleatoirement(gameState);
+            // Je vérifie si j'ai le droit de piocher (si je ne l'ai pas déjà fait)
+            if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
+                return new PiocherObjectif(TypeObjectif.JARDINIER);
             }
-            return;
+            // Si j'ai déjà pioché, tant pis, je continue pour essayer de faire autre chose...
         }
 
-        Couleur couleurCible = objectifPrioritaire.getCouleur();
+        // On détermine la couleur visée (soit celle de l'objectif, soit VERT par défaut si null)
+        Couleur couleurCible = (objectifPrioritaire != null) ? objectifPrioritaire.getCouleur() : Couleur.VERT;
 
-        // 2. STRATÉGIE : Essayer de faire pousser du bambou
-        if (tenterDeplacerJardinier(gameState, couleurCible)) {
-            return;
+        // 3. STRATEGIE PRINCIPALE : Faire pousser du bambou (Déplacer Jardinier)
+        if (!typesInterdits.contains(TypeAction.DEPLACER_JARDINIER)) {
+            Action actionJardinier = tenterDeplacerJardinier(gameState, couleurCible);
+            if (actionJardinier != null) {
+                return actionJardinier;
+            }
         }
 
-        // 3. PLAN B : Poser une parcelle
-        if (tenterPoserParcelle(gameState, couleurCible)) {
-            return;
+        // 4. STRATEGIE SECONDAIRE : Poser une parcelle pour agrandir le terrain
+        if (!typesInterdits.contains(TypeAction.POSER_PARCELLE)) {
+            Action actionPose = tenterPoserParcelle(gameState, couleurCible);
+            if (actionPose != null) {
+                return actionPose;
+            }
         }
 
-        // 4. DERNIER RECOURS
-        jouerAleatoirement(gameState);
+        // 5. REPLI STRATEGIQUE (Si les actions principales sont impossibles ou interdites)
+
+        // A. Piocher un objectif (pour en avoir d'avance)
+        if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
+            return new PiocherObjectif(TypeObjectif.JARDINIER);
+        }
+
+        // B. Déplacer le Panda (au moins ça bloque les adversaires ou mange du bambou gênant)
+        if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA)) {
+            return tenterDeplacerPandaParDefaut(gameState);
+        }
+
+        // 6. ECHEC TOTAL : Aucune action valide trouvée
+        return null;
     }
 
     private ObjectifJardinier choisirMeilleurObjectif() {
@@ -65,78 +80,77 @@ public class BotJardinier extends Bot {
         return null;
     }
 
-    private boolean tenterDeplacerJardinier(GameState gameState, Couleur couleur) {
+    private Action tenterDeplacerJardinier(GameState gameState, Couleur couleur) {
         Plateau plateau = gameState.getPlateau();
-        Position positionJardinier = gameState.getJardinier().getPosition();
-        List<Position> destinationsPossibles = plateau.getTrajetsLigneDroite(positionJardinier);
+        Position posJardinier = gameState.getJardinier().getPosition();
+        List<Position> destinations = plateau.getTrajetsLigneDroite(posJardinier);
 
-        for (Position destination : destinationsPossibles) {
-            Parcelle parcelle = plateau.getParcelle(destination);
-
+        for (Position dest : destinations) {
+            Parcelle parcelle = plateau.getParcelle(dest);
+            // On cherche une parcelle de la bonne couleur qui peut encore grandir
             if (parcelle.getCouleur() == couleur
                     && parcelle.estIrriguee()
                     && parcelle.getNbSectionsSurParcelle() < 4) {
-
-                // MODIFICATION : Log
-                Action action = new DeplacerJardinier(gameState.getJardinier(), destination);
-                System.out.println(getNom() + " joue : " + action.toString());
-                action.appliquer(gameState, this);
-                return true;
+                return new DeplacerJardinier(gameState.getJardinier(), dest);
             }
         }
-        return false;
+        return null;
     }
 
-    private boolean tenterPoserParcelle(GameState gameState, Couleur couleurVisee) {
+    private Action tenterPoserParcelle(GameState gameState, Couleur couleurVisee) {
         PiocheParcelle pioche = gameState.getPioche();
         Plateau plateau = gameState.getPlateau();
 
+        // Vérification de base
         if (pioche.getSize() > 0 && !plateau.getEmplacementsDisponibles().isEmpty()) {
+
+            // Dans une version plus avancée, on devrait piocher 3 cartes et choisir.
             Parcelle parcellePiochee = pioche.piocherParcelle();
 
             if (parcellePiochee != null) {
                 List<Position> emplacements = plateau.getEmplacementsDisponibles();
+
+                // Stratégie simple : on prend le premier emplacement disponible
+                // Amélioration possible : chercher un emplacement adjacent à la même couleur
                 Position meilleurEmplacement = emplacements.get(0);
 
-                for(Position pos : emplacements) {
-                    if (pos.estAdjacent(Plateau.POSITION_ORIGINE)) {
-                        meilleurEmplacement = pos;
-                        break;
-                    }
-                }
-
-                // MODIFICATION : Log
-                Action action = new PoserParcelle(new Parcelle(meilleurEmplacement, parcellePiochee.getCouleur()), meilleurEmplacement);
-                System.out.println(getNom() + " joue : " + action.toString());
-                action.appliquer(gameState, this);
-                return true;
+                return new PoserParcelle(new Parcelle(meilleurEmplacement, parcellePiochee.getCouleur()), meilleurEmplacement);
             }
         }
-        return false;
+        return null;
     }
 
-    private void jouerAleatoirement(GameState gameState) {
-        Random random = new Random();
-
-        // Petit changement : on évite de piocher JARDINIER si on sait que c'est vide
-        boolean piocheJardinierVide = gameState.getPiocheJardinier().estVide();
-
-        if (random.nextBoolean() && !piocheJardinierVide) {
-            Action action = new PiocherObjectif(TypeObjectif.JARDINIER);
-            System.out.println(getNom() + " (Aléatoire) joue : " + action.toString());
-            action.appliquer(gameState, this);
-        } else {
-            List<Position> dep = gameState.getPlateau().getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
-            if (!dep.isEmpty()) {
-                Action action = new DeplacerPanda(gameState.getPanda(), dep.get(0));
-                System.out.println(getNom() + " (Aléatoire) joue : " + action.toString());
-                action.appliquer(gameState, this);
-            } else {
-                // Vraiment bloqué ? On pioche un objectif Panda
-                Action action = new PiocherObjectif(TypeObjectif.PANDA);
-                System.out.println(getNom() + " (Aléatoire) joue : " + action.toString());
-                action.appliquer(gameState, this);
-            }
+    private Action tenterDeplacerPandaParDefaut(GameState gameState) {
+        List<Position> destinations = gameState.getPlateau().getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
+        if (!destinations.isEmpty()) {
+            // On va à la première destination possible, juste pour ne pas passer son tour
+            return new DeplacerPanda(gameState.getPanda(), destinations.get(0));
         }
+        return null;
     }
+
+//    private void jouerAleatoirement(GameState gameState) {
+//        Random random = new Random();
+//
+//        // Petit changement : on évite de piocher JARDINIER si on sait que c'est vide
+//        boolean piocheJardinierVide = gameState.getPiocheJardinier().estVide();
+//
+//        if (random.nextBoolean() && !piocheJardinierVide) {
+//            Action action = new PiocherObjectif(TypeObjectif.JARDINIER);
+//            System.out.println(getNom() + " (Aléatoire) joue : " + action.toString());
+//            action.appliquer(gameState, this);
+//        } else {
+//            List<Position> dep = gameState.getPlateau().getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
+//            if (!dep.isEmpty()) {
+//                Action action = new DeplacerPanda(gameState.getPanda(), dep.get(0));
+//                System.out.println(getNom() + " (Aléatoire) joue : " + action.toString());
+//                action.appliquer(gameState, this);
+//            } else {
+//                // Vraiment bloqué ? On pioche un objectif Panda
+//                Action action = new PiocherObjectif(TypeObjectif.PANDA);
+//                System.out.println(getNom() + " (Aléatoire) joue : " + action.toString());
+//                action.appliquer(gameState, this);
+//            }
+//        }
+//    }
 }

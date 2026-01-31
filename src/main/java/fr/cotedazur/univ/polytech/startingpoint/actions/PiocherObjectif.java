@@ -5,6 +5,7 @@ import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 
 import java.util.Optional;
 
@@ -21,8 +22,7 @@ public class PiocherObjectif implements Action {
         PiocheObjectif piocheCible = switch(type) {
             case JARDINIER -> gameState.getPiocheJardinier();
             case PANDA -> gameState.getPiochePanda();
-            // Ajoutez le cas PARCELLE si vous l'avez créé
-            default -> gameState.getPiocheJardinier(); // Par défaut (sécurité)
+            case PARCELLE -> gameState.getPiocheObjectifParcelle();
         };
 
         // 2. Piocher
@@ -31,10 +31,15 @@ public class PiocherObjectif implements Action {
         if (objectifPioche.isPresent()) {
             Objectif obj = objectifPioche.get();
             bot.getInventaire().ajouterObjectif(obj);
-            System.out.println(bot.getNom() + " a pioché un objectif " + type);
+            Logger.print(bot.getNom() + " a pioché un objectif " + type);
         } else {
-            System.out.println(bot.getNom() + " a voulu piocher " + type + " mais la pioche est vide !");
+            Logger.print(bot.getNom() + " a voulu piocher " + type + " mais la pioche est vide !");
         }
+    }
+
+    @Override
+    public TypeAction getType() {
+        return TypeAction.PIOCHER_OBJECTIF;
     }
 
     @Override

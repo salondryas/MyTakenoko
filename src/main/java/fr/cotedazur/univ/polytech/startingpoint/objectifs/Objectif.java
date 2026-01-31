@@ -2,23 +2,19 @@ package fr.cotedazur.univ.polytech.startingpoint.objectifs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 
 public abstract class Objectif {
-    // Plus d'attribut "points" ici, chaque sous-classe gère ses points.
+    protected final int points;
+    protected final TypeObjectif type;
 
-    public Objectif() {
+    public Objectif(int points, TypeObjectif type) {
+        this.points = points;
+        this.type = type;
     }
 
-    /**
-     * Retourne le nombre de points que vaut cet objectif.
-     */
-    public abstract int getPoints();
-
-    /**
-     * Vérifie si l'objectif est rempli.
-     * @param gameState L'état complet du jeu (Plateau, Pioche, etc.)
-     * @param bot Le bot qui tente de valider l'objectif (pour son inventaire)
-     * @return true si l'objectif est validé
-     */
     public abstract boolean valider(GameState gameState, Bot bot);
+
+    public int getPoints() { return points; }
+    public TypeObjectif getType() { return type; }
 }

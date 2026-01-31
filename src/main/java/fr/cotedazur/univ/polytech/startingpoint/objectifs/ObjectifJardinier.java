@@ -11,44 +11,44 @@ import java.util.Map;
 public class ObjectifJardinier extends Objectif {
     private final Couleur couleur;
     private final int tailleRequise;
-    private final int points; // Ajout : les points ne sont pas fixes
 
+    // --- CONSTRUCTEUR 1 : Via l'Enum (Pour le Jeu) ---
+    public ObjectifJardinier(CarteBambou carte) {
+        super(carte.getPoints(), TypeObjectif.JARDINIER);
+        this.couleur = carte.getCouleur();
+        this.tailleRequise = carte.getTaille();
+    }
+
+    // --- CONSTRUCTEUR 2 : Manuel (Pour les Tests) ---
     public ObjectifJardinier(Couleur couleur, int tailleRequise, int points) {
-        super(); // Appel au constructeur parent (Objectif)
+        super(points, TypeObjectif.JARDINIER);
         this.couleur = couleur;
         this.tailleRequise = tailleRequise;
-        this.points = points;
     }
+    // ------------------------------------------------
 
-    @Override
-    public int getPoints() {
-        return points;
-    }
-
-    @Override
-    public boolean valider(GameState gameState, Bot bot) {
-        // On récupère toutes les parcelles du plateau
-        Map<Position, Parcelle> parcelles = gameState.getPlateau().getParcellesMap();
-
-        for (Parcelle p : parcelles.values()) {
-            // Critère 1 : La bonne couleur
-            // Critère 2 : La taille est suffisante (ou supérieure)
-            if (p.getCouleur() == this.couleur && p.getNbSectionsSurParcelle() >= tailleRequise) {
-                return true; // Dès qu'on en trouve UN qui match, c'est validé !
-            }
-        }
-        return false;
-    }
-    // Ajoutez ces getters s'ils n'existent pas encore
     public Couleur getCouleur() {
-        return couleur;
+        return this.couleur;
     }
 
     public int getTaille() {
         return tailleRequise;
     }
+
+    @Override
+    public boolean valider(GameState gameState, Bot bot) {
+        Map<Position, Parcelle> parcelles = gameState.getPlateau().getParcellesMap();
+
+        for (Parcelle p : parcelles.values()) {
+            if (p.getCouleur() == this.couleur && p.getNbSectionsSurParcelle() >= tailleRequise) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
-        return "Objectif Jardinier : Bambou " + couleur + " de taille " + tailleRequise + " (" + points + "pts)";
+        return "Objectif Jardinier : Bambou " + couleur + " de taille " + tailleRequise + " (" + super.getPoints() + "pts)";
     }
 }

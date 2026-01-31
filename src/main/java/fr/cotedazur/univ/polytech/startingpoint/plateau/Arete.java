@@ -10,7 +10,7 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
  * Représente une arête entre deux parcelles hexagonales adjacentes.
  * Utilisée pour positionner les canaux d'irrigation.
  */
-class Arete {
+public class Arete {
     private final Position parcelle1;
     private final Position parcelle2;
 

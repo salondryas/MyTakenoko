@@ -16,6 +16,11 @@ public class ObtenirCanalDirrigation implements Action {
     }
 
     @Override
+    public TypeAction getType() {
+        return TypeAction.PRENDRE_IRRIGATION;
+    }
+
+    @Override
     public String toString() {
         return "prend 1 canal d'irrigation";
     }

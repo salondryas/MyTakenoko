@@ -39,6 +39,11 @@ public class DeplacerPanda implements Action {
     }
 
     @Override
+    public TypeAction getType() {
+        return TypeAction.DEPLACER_PANDA;
+    }
+
+    @Override
     public String toString() {
         return "déplace le panda en " + destination;
     }

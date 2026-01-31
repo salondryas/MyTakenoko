@@ -68,8 +68,10 @@ public class Plateau {
         for (PositionsRelatives direction : PositionsRelatives.values()) {
             if (direction != PositionsRelatives.ZERO) {
                 Position voisin = position.add(direction.getPosition());
-                if (voisin.equals(POSITION_ORIGINE)) return true;
-                if (parcelles.containsKey(voisin)) nbVoisinsOccupes++;
+                if (voisin.equals(POSITION_ORIGINE))
+                    return true;
+                if (parcelles.containsKey(voisin))
+                    nbVoisinsOccupes++;
             }
         }
         return nbVoisinsOccupes >= 2;
@@ -116,7 +118,8 @@ public class Plateau {
     public List<Parcelle> getParcellesVoisinesMemeCouleur(Position positionCible) {
         List<Parcelle> voisinesMemeCouleur = new ArrayList<>();
         Parcelle parcelleCentrale = getParcelle(positionCible);
-        if (parcelleCentrale == null) return voisinesMemeCouleur;
+        if (parcelleCentrale == null)
+            return voisinesMemeCouleur;
 
         for (PositionsRelatives direction : PositionsRelatives.values()) {
             if (direction != PositionsRelatives.ZERO) {
@@ -134,8 +137,10 @@ public class Plateau {
     // --- IRRIGATION REFACTORISÉE (Cognitive Complexity Reduced) ---
 
     public boolean peutPlacerCanal(Position p1, Position p2) {
-        if (!p1.estAdjacent(p2)) return false;
-        if (p1.equals(POSITION_ORIGINE) || p2.equals(POSITION_ORIGINE)) return false;
+        if (!p1.estAdjacent(p2))
+            return false;
+        if (p1.equals(POSITION_ORIGINE) || p2.equals(POSITION_ORIGINE))
+            return false;
         return estConnecteAuReseau(p1, p2);
     }
 
@@ -195,6 +200,13 @@ public class Plateau {
         if (!peutPlacerCanal(p1, p2)) return false;
 
         CanalDirrigation nouveauCanal = new CanalDirrigation(p1, p2);
+
+        // --- REMETTRE CE BLOC DE SÉCURITÉ ---
+        if (canaux.contains(nouveauCanal)) {
+            return false;
+        }
+        // ------------------------------------
+
         canaux.add(nouveauCanal);
         irriguerParcellesTouchees(nouveauCanal);
         return true;
@@ -224,4 +236,5 @@ public class Plateau {
         AfficherEtatPlateau aep = new AfficherEtatPlateau(this);
         return aep.afficher();
     }
+
 }

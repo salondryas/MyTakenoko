@@ -1,5 +1,6 @@
 package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
+import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Amenagement;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Placable;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
@@ -9,15 +10,21 @@ import java.util.Objects;
 public class Parcelle extends Placable {
     private Couleur couleur;
     private Bambou bambou;
+
     private boolean irriguee; // Booléen pour suivre l'état d'irrigation
+
+    private boolean isAmenagee;
+    private Amenagement amenagementAcqui;
 
     // Constructeur pour la pioche des parcelles, elles ont une position null si
     // elles sont dans l'inventaire d'un joueur
+
     public Parcelle(Couleur couleur) {
         super(null);
         this.couleur = couleur;
         this.bambou = new Bambou(couleur);
         this.irriguee = false;
+        isAmenagee = false;
     }
 
     // constructeur pour l'utilisation des parcelles dans le jeu
@@ -26,6 +33,7 @@ public class Parcelle extends Placable {
         this.couleur = couleur;
         this.bambou = new Bambou(couleur);
         this.irriguee = false;
+        isAmenagee = false;
     }
 
     public Bambou getBambou() {
@@ -98,5 +106,14 @@ public class Parcelle extends Placable {
             irriguee = true;
             bambou.faireApparaitre();
         }
+    }
+
+    public void fetchAmenagementAcqui(Amenagement amenagement) {
+        amenagementAcqui = amenagement;
+        isAmenagee = true;
+    }
+
+    public boolean getIsAmenagee() {
+        return isAmenagee;
     }
 }

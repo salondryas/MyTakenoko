@@ -4,40 +4,57 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Stack;
 
 public class PiocheObjectif {
-    private List<Objectif> deck;
+    // On utilise une Stack pour simuler une pile de cartes (LIFO)
+    private final Stack<Objectif> cartes;
 
     public PiocheObjectif() {
-        this.deck = new ArrayList<>();
+        this.cartes = new Stack<>();
     }
 
+    /**
+     * Ajoute un objectif à la pioche (utilisé lors de l'initialisation dans GameState)
+     */
     public void ajouter(Objectif objectif) {
-        this.deck.add(objectif);
+        if (objectif != null) {
+            cartes.push(objectif);
+        }
     }
 
-    // Pour remplir la pioche d'un coup
-    public void ajouterTout(List<Objectif> objectifs) {
-        this.deck.addAll(objectifs);
-    }
-
+    /**
+     * Mélange les cartes présentes dans la pioche
+     */
     public void melanger() {
-        Collections.shuffle(deck);
+        Collections.shuffle(cartes);
     }
 
-    // Retourne un Optional car la pioche peut être vide
+    /**
+     * Pioche la carte du dessus.
+     * Retourne un Optional pour éviter les erreurs si la pioche est vide.
+     */
     public Optional<Objectif> piocher() {
-        if (deck.isEmpty()) {
+        if (cartes.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(deck.remove(0));
+        return Optional.of(cartes.pop());
+    }
+
+    /**
+     * Retourne le nombre de cartes restantes dans la pioche
+     */
+    public int getTaille() {
+        return cartes.size();
     }
 
     public boolean estVide() {
-        return deck.isEmpty();
+        return cartes.isEmpty();
     }
 
-    public int size() {
-        return deck.size();
+    // Utile pour le debug
+    @Override
+    public String toString() {
+        return "Pioche de " + getTaille() + " cartes";
     }
 }

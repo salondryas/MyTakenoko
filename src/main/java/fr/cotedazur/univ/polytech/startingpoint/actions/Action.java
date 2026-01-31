@@ -7,5 +7,7 @@ public interface Action {
     // La méthode reçoit maintenant le contexte global ET le joueur qui fait l'action
     void appliquer(GameState gameState, Bot joueur);
 
+    TypeAction getType();
+
     String toString();
 }

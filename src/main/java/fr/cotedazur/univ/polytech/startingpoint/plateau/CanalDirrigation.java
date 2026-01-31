@@ -1,19 +1,17 @@
 package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
 import java.util.Objects;
-
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 /**
  * Représente un canal d'irrigation placé sur une arête entre deux parcelles.
+ * Nettoyé pour le Refactor Sonar (Suppression du static).
  */
 public class CanalDirrigation {
     private final Arete position;
-    private static int nbCanaux = 20;
 
     public CanalDirrigation(Arete position) {
         this.position = position;
-        // nb_canaux--;
     }
 
     public CanalDirrigation(Position p1, Position p2) {
@@ -26,10 +24,8 @@ public class CanalDirrigation {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         CanalDirrigation canal = (CanalDirrigation) o;
         return Objects.equals(position, canal.position);
     }

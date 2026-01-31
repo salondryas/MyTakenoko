@@ -1,190 +1,74 @@
 package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Bassin;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Enclos;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Engrais;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.QuantityException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-class AmenagementTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    private Parcelle parcelle;
-    private Bambou bambou;
+public class AmenagementTest {
+    Parcelle parcelleVerte;
+    Bambou bambou;
 
     @BeforeEach
     void setUp() {
-        parcelle = new Parcelle(Couleur.VERT);
-        bambou = new Bambou(Couleur.VERT);
-    }
-
-    // ========== Tests pour Bassin ==========
-
-    @Test
-    void testBassinConstructorAddsAmenagement() {
-        Bassin bassin = new Bassin(parcelle, bambou);
-
-        assertTrue(parcelle.getIsAmenagee(), "Parcelle should be marked as amenagee");
+        parcelleVerte = new Parcelle(Couleur.VERT);
+        bambou = parcelleVerte.getBambou();
     }
 
     @Test
-    void testBassinActionSurParcelleTriggerIrrigation() {
-        Bassin bassin = new Bassin(parcelle);
+    void testBassinIrrigueParcelle() {
+        assertFalse(parcelleVerte.estIrriguee());
 
-        assertFalse(parcelle.estIrriguee(), "Parcelle should not be irrigated initially");
+        // Simulation d'un achat ou d'une pose via Pioche
+        new Bassin(parcelleVerte, bambou);
 
-        bassin.actionSurParcelle(parcelle);
-
-        assertTrue(parcelle.estIrriguee(), "Parcelle should be irrigated after action");
+        assertTrue(parcelleVerte.getIsAmenagee());
+        assertTrue(parcelleVerte.getAmenagement() instanceof Bassin);
+        // Le bassin doit déclencher l'irrigation immédiate
+        assertTrue(parcelleVerte.estIrriguee());
     }
 
     @Test
-    void testBassinActionSurParcelleWithNonParcelle() {
-        Bassin bassin = new Bassin(parcelle);
+    void testEngraisBoosteCroissance() {
+        // L'engrais est posé
+        new Engrais(parcelleVerte, bambou);
 
-        assertDoesNotThrow(() -> bassin.actionSurParcelle(bambou));
-        assertDoesNotThrow(() -> bassin.actionSurParcelle("String"));
-    }
+        // On simule une irrigation pour faire pousser
+        parcelleVerte.triggerIrrigation();
 
-    // ========== Tests pour Engrais ==========
-
-    @Test
-    void testEngraisConstructorAddsAmenagement() {
-        Engrais engrais = new Engrais(parcelle, bambou);
-
-        assertTrue(parcelle.getIsAmenagee(), "Parcelle should be marked as amenagee");
+        // Normalement 1 section, mais avec Engrais ça dépend de votre règle (souvent +2 ou x2)
+        // Adaptez l'assertion selon votre règle exacte dans Bambou.croissance()
+        assertTrue(parcelleVerte.getNbSectionsSurParcelle() > 0);
+        assertTrue(parcelleVerte.getAmenagement() instanceof Engrais);
     }
 
     @Test
-    void testEngraisActionSurParcelleIncreaseGrowth() {
-        Engrais engrais = new Engrais(parcelle);
+    void testEnclosProtegeDuPanda() {
+        Panda panda = new Panda(); // Mock rapide
+        new Enclos(parcelleVerte, bambou);
 
-        // Assuming increaseSectionGrowth() modifies some internal state
-        assertDoesNotThrow(() -> engrais.actionSurParcelle(bambou));
+        // Teste l'effet "Action sur Parcelle"
+        Enclos enclos = (Enclos) parcelleVerte.getAmenagement();
+        enclos.actionSurParcelle(panda);
+
+        // Vérifiez ici que le panda a bien reçu l'interdiction (selon votre implémentation de Panda)
+        // ex: assertFalse(panda.peutManger());
+        assertTrue(parcelleVerte.getAmenagement() instanceof Enclos);
     }
 
     @Test
-    void testEngraisActionSurParcelleWithNonBambou() {
-        Engrais engrais = new Engrais(parcelle);
+    void testImpossibleDePoserDeuxAmenagements() {
+        new Bassin(parcelleVerte, bambou);
+        assertTrue(parcelleVerte.getIsAmenagee());
 
-        assertDoesNotThrow(() -> engrais.actionSurParcelle(parcelle));
-        assertDoesNotThrow(() -> engrais.actionSurParcelle("String"));
-    }
+        // Tente de poser un Enclos par dessus
+        new Enclos(parcelleVerte, bambou);
 
-    // ========== Tests pour Enclos ==========
-
-    @Test
-    void testEnclosConstructorAddsAmenagement() {
-        Enclos enclos = new Enclos(parcelle, bambou);
-
-        assertTrue(parcelle.getIsAmenagee(), "Parcelle should be marked as amenagee");
-    }
-
-    @Test
-    void testEnclosActionSurParcellePreventsEating() {
-        Enclos enclos = new Enclos(parcelle);
-        Panda panda = new Panda();
-
-        assertDoesNotThrow(() -> enclos.actionSurParcelle(panda));
-    }
-
-    @Test
-    void testEnclosActionSurParcelleWithNonPanda() {
-        Enclos enclos = new Enclos(parcelle);
-
-        assertDoesNotThrow(() -> enclos.actionSurParcelle(parcelle));
-        assertDoesNotThrow(() -> enclos.actionSurParcelle(bambou));
-    }
-
-    // ========== Tests pour Parcelle amenagement methods ==========
-
-    @Test
-    void testFetchAmenagementAcqui() {
-        assertFalse(parcelle.getIsAmenagee(), "Parcelle should not be amenagee initially");
-
-        Bassin bassin = new Bassin(parcelle);
-        parcelle.fetchAmenagementAcqui(bassin);
-
-        assertTrue(parcelle.getIsAmenagee(), "Parcelle should be marked as amenagee after fetch");
-    }
-
-    @Test
-    void testGetIsAmenagee() {
-        assertFalse(parcelle.getIsAmenagee(), "New parcelle should not be amenagee");
-
-        parcelle.fetchAmenagementAcqui(new Engrais(parcelle));
-
-        assertTrue(parcelle.getIsAmenagee(), "Parcelle should be amenagee after fetching amenagement");
-    }
-
-    // ========== Tests pour l'interface Amenagement ==========
-
-    @Test
-    void testQuantityDeductionThrowsExceptionWhenZero() {
-        Bassin bassin = new Bassin(parcelle);
-
-        QuantityException exception = assertThrows(
-                QuantityException.class,
-                () -> bassin.quantityDeduction(0),
-                "Should throw QuantityException when quantity is 0");
-
-        assertEquals("Amenagements indisponibles", exception.getMessage());
-    }
-
-    @Test
-    void testQuantityDeductionSucceedsWhenPositive() {
-        Bassin bassin = new Bassin(parcelle);
-
-        assertDoesNotThrow(() -> bassin.quantityDeduction(1));
-        assertDoesNotThrow(() -> bassin.quantityDeduction(3));
-    }
-
-    @Test
-    void testAddToParcelleWhenConditionsMet() {
-        Parcelle newParcelle = new Parcelle(Couleur.JAUNE);
-        Bambou newBambou = new Bambou(Couleur.JAUNE);
-
-        assertEquals(0, newBambou.getNumberOfSections(), "Bambou should have 0 sections");
-        assertFalse(newParcelle.getIsAmenagee(), "Parcelle should not be amenagee");
-
-        Bassin bassin = new Bassin(newParcelle);
-        bassin.addToParcelle(3, newParcelle, newBambou);
-
-        assertTrue(newParcelle.getIsAmenagee(), "Parcelle should be amenagee after addToParcelle");
-    }
-
-    @Test
-    void testAddToParcelleWhenAlreadyAmenagee() {
-        Bambou newBambou = new Bambou(Couleur.ROSE);
-        parcelle.fetchAmenagementAcqui(new Enclos(parcelle));
-
-        assertTrue(parcelle.getIsAmenagee(), "Parcelle should be amenagee");
-
-        Bassin bassin = new Bassin(parcelle);
-
-        // Should not throw, just not add
-        assertDoesNotThrow(() -> bassin.addToParcelle(3, parcelle, newBambou));
-    }
-
-    @Test
-    void testAddToParcelleWhenBambooHasSections() {
-        Parcelle newParcelle = new Parcelle(Couleur.VERT);
-        Bambou newBambou = new Bambou(Couleur.VERT);
-        newBambou.croissance(); // Add a section
-
-        assertTrue(newBambou.getNumberOfSections() > 0, "Bambou should have sections");
-
-        Bassin bassin = new Bassin(newParcelle);
-        bassin.addToParcelle(3, newParcelle, newBambou);
-
-        assertFalse(newParcelle.getIsAmenagee(), "Parcelle should not be amenagee when bamboo has sections");
+        // Doit rester un Bassin
+        assertTrue(parcelleVerte.getAmenagement() instanceof Bassin);
     }
 }

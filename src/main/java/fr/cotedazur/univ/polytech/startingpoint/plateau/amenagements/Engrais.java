@@ -2,27 +2,31 @@ package fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements;
 
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Bambou;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.QuantityException;
 
 public class Engrais implements Amenagement {
-    private static int quantity = 3;
+    // SUPPRESSION DU STATIC INT QUANTITY
 
+    // Constructeur utilisé par la Pioche
     public Engrais(Parcelle parcelle) {
     }
 
+    // Constructeur utilisé quand un joueur ACHÈTE un aménagement
     public Engrais(Parcelle parcelle, Bambou bamboo) {
-        try {
-            quantityDeduction(quantity);
-        } catch (QuantityException e) {
-            System.out.println(e.getMessage());
+        if (!parcelle.getIsAmenagee()) {
+            parcelle.fetchAmenagementAcqui(this);
         }
-        addToParcelle(quantity, parcelle, bamboo);
     }
 
     @Override
     public void actionSurParcelle(Object element) {
+        // L'engrais force la croissance (double la pousse ou fait pousser 2 fois selon vos règles)
         if (element instanceof Bambou bamboo) {
             bamboo.croissance();
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Engrais";
     }
 }

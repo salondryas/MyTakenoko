@@ -3,27 +3,33 @@ package fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Bambou;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Panda;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.QuantityException;
 
 public class Enclos implements Amenagement {
-    private static int quantity = 3;
+    // SUPPRESSION DU STATIC INT QUANTITY
 
+    // Constructeur utilisé par la Pioche (pour les parcelles pré-aménagées)
     public Enclos(Parcelle parcelle) {
+        // Rien à faire, l'association se fait dans la Pioche
     }
 
+    // Constructeur utilisé quand un joueur ACHÈTE un aménagement
     public Enclos(Parcelle parcelle, Bambou bamboo) {
-        try {
-            quantityDeduction(quantity);
-        } catch (QuantityException e) {
-            System.out.println(e.getMessage());
+        // On applique l'effet directement si la parcelle n'est pas déjà aménagée
+        if (!parcelle.getIsAmenagee()) {
+            parcelle.fetchAmenagementAcqui(this);
         }
-        addToParcelle(quantity, parcelle, bamboo);
     }
 
     @Override
     public void actionSurParcelle(Object element) {
+        // Le panda ne peut pas manger ici
         if (element instanceof Panda panda) {
             panda.cannotEat();
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Enclos";
     }
 }

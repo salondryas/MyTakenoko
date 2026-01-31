@@ -24,12 +24,21 @@ public class Plateau {
         parcellesIrriguees.add(POSITION_ORIGINE);
     }
 
-    public void placerParcelle(Parcelle parcelle, Position position) {
+    public boolean placerParcelle(Parcelle parcelle, Position position) {
+        // 1. Sécurité anti-écrasement
+        if (parcelles.containsKey(position)) {
+            return false; // Impossible, la place est prise
+        }
+
         parcelles.put(position, parcelle);
+
+        // 2. Gestion de l'irrigation automatique (adjacent à l'étang)
         if (position.estAdjacent(POSITION_ORIGINE)) {
             parcelle.triggerIrrigation();
             parcellesIrriguees.add(position);
         }
+
+        return true;
     }
 
     public Parcelle getParcelle(Position position) {
@@ -201,11 +210,9 @@ public class Plateau {
 
         CanalDirrigation nouveauCanal = new CanalDirrigation(p1, p2);
 
-        // --- REMETTRE CE BLOC DE SÉCURITÉ ---
         if (canaux.contains(nouveauCanal)) {
             return false;
         }
-        // ------------------------------------
 
         canaux.add(nouveauCanal);
         irriguerParcellesTouchees(nouveauCanal);

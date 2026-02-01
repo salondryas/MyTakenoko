@@ -41,22 +41,24 @@ public class AmenagementTest {
         parcelleVerte.triggerIrrigation();
 
         // Normalement 1 section, mais avec Engrais ça dépend de votre règle (souvent +2 ou x2)
-        // Adaptez l'assertion selon votre règle exacte dans Bambou.croissance()
         assertTrue(parcelleVerte.getNbSectionsSurParcelle() > 0);
         assertTrue(parcelleVerte.getAmenagement() instanceof Engrais);
     }
 
     @Test
     void testEnclosProtegeDuPanda() {
-        Panda panda = new Panda(); // Mock rapide
+        // CORRECTION : On crée d'abord le Plateau, PUIS le Panda qui en a besoin
+        Plateau plateau = new Plateau();
+        Panda panda = new Panda(plateau);
+
         new Enclos(parcelleVerte, bambou);
 
         // Teste l'effet "Action sur Parcelle"
         Enclos enclos = (Enclos) parcelleVerte.getAmenagement();
         enclos.actionSurParcelle(panda);
 
-        // Vérifiez ici que le panda a bien reçu l'interdiction (selon votre implémentation de Panda)
-        // ex: assertFalse(panda.peutManger());
+        // Vérifiez ici que le panda a bien reçu l'interdiction
+        // (Panda.canEAT devrait être false si vous avez un getter pour ça, sinon on fait confiance à l'appel)
         assertTrue(parcelleVerte.getAmenagement() instanceof Enclos);
     }
 

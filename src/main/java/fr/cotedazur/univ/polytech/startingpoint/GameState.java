@@ -16,58 +16,48 @@ public class GameState {
     private Panda panda;
     private List<Bot> joueurs;
 
-    // Les Pioches
     private PiocheParcelle piocheParcelle;
     private PiocheObjectif piocheJardinier;
     private PiocheObjectif piochePanda;
     private PiocheObjectif piocheObjectifParcelle;
 
-    // --- CONSTRUCTEUR 1 : Utilisé par Partie.java (CELUI QUI MANQUAIT) ---
+    // Constructeur principal
     public GameState(List<Bot> joueurs) {
-        // 1. Initialisation du plateau et des personnages
+        // 1. On crée le Plateau EN PREMIER
         this.plateau = new Plateau();
-        this.jardinier = new Jardinier();
-        this.panda = new Panda();
 
-        // 2. On récupère les joueurs fournis par la Partie
+        // 2. On passe ce plateau aux personnages (CORRECTION ICI)
+        this.jardinier = new Jardinier(plateau);
+        this.panda = new Panda(plateau);
+
         this.joueurs = joueurs;
 
-        // 3. Initialisation des pioches
-        this.piocheParcelle = new PiocheParcelle(); // Se remplit automatiquement grâce à votre refactor
+        this.piocheParcelle = new PiocheParcelle();
         this.piocheJardinier = new PiocheObjectif();
         this.piochePanda = new PiocheObjectif();
         this.piocheObjectifParcelle = new PiocheObjectif();
     }
 
-    // --- CONSTRUCTEUR 2 : Par défaut (Pour les tests ou compatibilité) ---
     public GameState() {
-        this(new ArrayList<>()); // Appelle l'autre constructeur avec une liste vide
+        this(new ArrayList<>());
     }
 
     // --- GETTERS ---
-
     public Plateau getPlateau() { return plateau; }
     public Jardinier getJardinier() { return jardinier; }
     public Panda getPanda() { return panda; }
     public List<Bot> getJoueurs() { return joueurs; }
-
     public PiocheParcelle getPiocheParcelle() { return piocheParcelle; }
-    // Alias pour compatibilité
-    public PiocheParcelle getPioche() { return piocheParcelle; }
-
+    public PiocheParcelle getPioche() { return piocheParcelle; } // Alias
     public PiocheObjectif getPiocheJardinier() { return piocheJardinier; }
     public PiocheObjectif getPiochePanda() { return piochePanda; }
     public PiocheObjectif getPiocheObjectifParcelle() { return piocheObjectifParcelle; }
 
-    // --- MÉTHODES UTILITAIRES ---
-
     public void reset() {
+        // Même logique pour le reset
         this.plateau = new Plateau();
-        this.jardinier = new Jardinier();
-        this.panda = new Panda();
-
-        // Attention : On garde la liste des joueurs existante si on reset juste le plateau !
-        // Si besoin de vider les joueurs, faire : this.joueurs.clear();
+        this.jardinier = new Jardinier(plateau); // CORRECTION
+        this.panda = new Panda(plateau);         // CORRECTION
 
         this.piocheParcelle = new PiocheParcelle();
         this.piocheJardinier = new PiocheObjectif();

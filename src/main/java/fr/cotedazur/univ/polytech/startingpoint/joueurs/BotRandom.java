@@ -4,7 +4,6 @@ import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
@@ -23,58 +22,69 @@ public class BotRandom extends Bot {
     @Override
     protected Action choisirUneAction(GameState gameState, Set<TypeAction> typesInterdits) {
         Plateau plateau = gameState.getPlateau();
-        PiocheParcelle pioche = gameState.getPioche();
 
-        // On essaie X fois de trouver une action au hasard qui n'est pas interdite
-        for (int i = 0; i < 20; i++) {
-            int choix = random.nextInt(5); // 0 à 4 (avec Irrigation)
+        for (int i = 0; i < 50; i++) { // Augmentation des essais pour trouver un coup valide
+            int choix = random.nextInt(5);
 
             switch (choix) {
                 case 0: // POSER PARCELLE
                     if (!typesInterdits.contains(TypeAction.POSER_PARCELLE)
-                            && pioche.getSize() > 0
-                            && !plateau.getEmplacementsDisponibles().isEmpty()) {
-                        Parcelle p = pioche.piocherParcelle();
-                        if (p != null) {
-                            List<Position> dispos = plateau.getEmplacementsDisponibles();
-                            Position pos = dispos.get(random.nextInt(dispos.size()));
-                            return new PoserParcelle(new Parcelle(pos, p.getCouleur()), pos);
+                            && !gameState.getPiocheParcelle().estVide()) {
+
+                        List<Position> dispos = plateau.getEmplacementsDisponibles();
+                        if (!dispos.isEmpty()) {
+                            Parcelle p = gameState.getPiocheParcelle().piocher();
+                            if (p != null) {
+                                Position pos = dispos.get(random.nextInt(dispos.size()));
+                                return new PoserParcelle(p, pos);
+                            }
                         }
                     }
                     break;
 
-                case 1: // PANDA
+                case 1: // DEPLACER PANDA
                     if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA)) {
-                        List<Position> deplacements = plateau.getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
-                        if (!deplacements.isEmpty()) {
-                            return new DeplacerPanda(gameState.getPanda(), deplacements.get(random.nextInt(deplacements.size())));
+                        List<Position> dep = plateau.getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
+                        if (!dep.isEmpty()) {
+                            return new DeplacerPanda(gameState.getPanda(), dep.get(random.nextInt(dep.size())));
                         }
                     }
                     break;
 
-                case 2: // JARDINIER
+                case 2: // DEPLACER JARDINIER
                     if (!typesInterdits.contains(TypeAction.DEPLACER_JARDINIER)) {
-                        List<Position> deplacements = plateau.getTrajetsLigneDroite(gameState.getJardinier().getPosition());
-                        if (!deplacements.isEmpty()) {
-                            return new DeplacerJardinier(gameState.getJardinier(), deplacements.get(random.nextInt(deplacements.size())));
+                        List<Position> dep = plateau.getTrajetsLigneDroite(gameState.getJardinier().getPosition());
+                        if (!dep.isEmpty()) {
+                            return new DeplacerJardinier(gameState.getJardinier(), dep.get(random.nextInt(dep.size())));
                         }
                     }
                     break;
 
                 case 3: // PIOCHER OBJECTIF
                     if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
-                        TypeObjectif type = (random.nextBoolean()) ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
-                        return new PiocherObjectif(type);
+                        boolean jardinierVide = gameState.getPiocheJardinier().getTaille() == 0;
+                        boolean pandaVide = gameState.getPiochePanda().getTaille() == 0;
+
+                        if (!jardinierVide || !pandaVide) {
+                            TypeObjectif type;
+                            if (jardinierVide) type = TypeObjectif.PANDA;
+                            else if (pandaVide) type = TypeObjectif.JARDINIER;
+                            else type = random.nextBoolean() ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
+
+                            return new PiocherObjectif(type);
+                        }
                     }
                     break;
 
                 case 4: // PRENDRE IRRIGATION
-                    if (!typesInterdits.contains(TypeAction.PRENDRE_IRRIGATION)) {
+                    // CORRECTION : On interdit si on en a déjà plus de 2
+                    if (!typesInterdits.contains(TypeAction.PRENDRE_IRRIGATION)
+                            && getInventaire().getNombreCanauxDisponibles() < 2) {
                         return new ObtenirCanalDirrigation();
                     }
                     break;
             }
         }
-        return null; // Rien trouvé
+        return null;
     }
 }

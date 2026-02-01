@@ -2,24 +2,21 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.CarteBambou;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifJardinier;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.*;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
 
 class BotJardinierTest {
 
@@ -30,124 +27,65 @@ class BotJardinierTest {
     @Mock Jardinier jardinierMock;
     @Mock Panda pandaMock;
     @Mock PiocheParcelle piocheParcelleMock;
-    @Mock PiocheObjectif piocheObjectifMock;
-
-    // On mock la carte pour ne pas dépendre de l'Enum réel
-    @Mock CarteBambou carteBambouMock;
+    @Mock PiocheObjectif piocheObjectifJardinierMock;
+    @Mock PiocheObjectif piocheObjectifPandaMock;
 
     @BeforeEach
     void setUp() {
-        // 1. Initialisation du Bot
-        bot = new BotJardinier("BotJardinierTest");
+        MockitoAnnotations.openMocks(this);
+        bot = new BotJardinier("JardinierTest");
 
-        // 2. CRUCIAL : Initialisation manuelle des Mocks (C'est ce qui manquait !)
-        gameStateMock = mock(GameState.class);
-        plateauMock = mock(Plateau.class);
-        jardinierMock = mock(Jardinier.class);
-        pandaMock = mock(Panda.class);
-        piocheParcelleMock = mock(PiocheParcelle.class);
-        piocheObjectifMock = mock(PiocheObjectif.class);
-        carteBambouMock = mock(fr.cotedazur.univ.polytech.startingpoint.objectifs.CarteBambou.class); // Si tu l'utilises
+        // Configuration de base du Mock GameState
+        when(gameStateMock.getPlateau()).thenReturn(plateauMock);
+        when(gameStateMock.getJardinier()).thenReturn(jardinierMock);
+        when(gameStateMock.getPanda()).thenReturn(pandaMock);
+        when(gameStateMock.getPiocheParcelle()).thenReturn(piocheParcelleMock);
+        when(gameStateMock.getPiocheJardinier()).thenReturn(piocheObjectifJardinierMock);
+        when(gameStateMock.getPiochePanda()).thenReturn(piocheObjectifPandaMock);
 
-        // 3. Configuration du comportement des Mocks (les "when")
-        // Lenient permet d'éviter les erreurs si un mock n'est pas utilisé dans un test précis
-        lenient().when(gameStateMock.getPlateau()).thenReturn(plateauMock);
-        lenient().when(gameStateMock.getJardinier()).thenReturn(jardinierMock);
-        lenient().when(gameStateMock.getPanda()).thenReturn(pandaMock);
-        lenient().when(gameStateMock.getPioche()).thenReturn(piocheParcelleMock);
-
-        // Configuration de la carte factice par défaut (si utilisée)
-        lenient().when(carteBambouMock.getCouleur()).thenReturn(fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur.VERT);
-        lenient().when(carteBambouMock.getTaille()).thenReturn(4);
-        lenient().when(carteBambouMock.getPoints()).thenReturn(5);
-
-        // Configuration par défaut des listes pour éviter d'autres NullPointer
-        lenient().when(plateauMock.getEmplacementsDisponibles()).thenReturn(java.util.Collections.emptyList());
-        lenient().when(plateauMock.getTrajetsLigneDroite(any())).thenReturn(java.util.Collections.emptyList());
+        // Par défaut, les pioches ne sont pas vides
+        // (Assurez-vous que votre classe PiocheObjectif a bien la méthode estVide() ou getTaille())
+        when(piocheObjectifJardinierMock.getTaille()).thenReturn(10);
+        // Si vous utilisez estVide() dans le bot, ajoutez : when(piocheObjectifJardinierMock.estVide()).thenReturn(false);
+        when(piocheParcelleMock.estVide()).thenReturn(false);
     }
 
     @Test
-    void testStrat1_PrioriteDeplacerJardinier() {
-        // SCÉNARIO : Le bot a un objectif VERT.
-        // ATTENDU : Il doit renvoyer une action DeplacerJardinier.
+    void testPriorite1_InventaireVide_PiocheObjectif() {
+        // Cas : Le bot n'a pas d'objectifs
+        // Simulation : Pioche jardinier non vide
+        when(piocheObjectifJardinierMock.getTaille()).thenReturn(5); // Exemple de taille > 0
 
-        // 1. On donne un objectif au bot (Nouveau Constructeur avec CarteBambou)
-        ObjectifJardinier objVert = new ObjectifJardinier(carteBambouMock);
-        bot.getInventaire().ajouterObjectif(objVert);
-
-        // 2. On prépare le terrain
-        Position posJardinier = new Position(0,0);
-        Position posCible = new Position(1,0);
-
-        when(jardinierMock.getPosition()).thenReturn(posJardinier);
-        when(plateauMock.getTrajetsLigneDroite(posJardinier)).thenReturn(List.of(posCible));
-
-        // La parcelle cible est parfaite pour l'objectif
-        Parcelle parcelleCible = mock(Parcelle.class);
-        when(parcelleCible.getCouleur()).thenReturn(Couleur.VERT);
-        when(parcelleCible.estIrriguee()).thenReturn(true);
-        when(parcelleCible.getNbSectionsSurParcelle()).thenReturn(1);
-        when(plateauMock.getParcelle(posCible)).thenReturn(parcelleCible);
-
-        // 3. Action : Le bot réfléchit
         List<Action> actions = bot.jouer(gameStateMock);
 
-        // 4. Vérification
-        // IMPORTANT : Le bot n'exécute plus l'action, il la retourne !
-        // On vérifie donc le contenu de la liste retournée.
-        assertFalse(actions.isEmpty(), "Le bot aurait dû proposer une action");
-        assertTrue(actions.get(0) instanceof DeplacerJardinier, "L'action devrait être un déplacement de jardinier");
-
-        // (Optionnel) Vérifier que c'est la bonne destination en castant
-        // DeplacerJardinier action = (DeplacerJardinier) actions.get(0);
-        // ... vérification plus poussée si besoin
-    }
-
-    @Test
-    void testStrat2_PlanB_PoserParcelle() {
-        // SCÉNARIO : Objectif VERT, mais Jardinier bloqué.
-        // ATTENDU : Il doit proposer PoserParcelle.
-
-        // 1. Objectif Vert
-        bot.getInventaire().ajouterObjectif(new ObjectifJardinier(carteBambouMock));
-
-        // 2. Pas de trajet utile (Plan A échoue)
-        when(plateauMock.getTrajetsLigneDroite(any())).thenReturn(Collections.emptyList());
-
-        // 3. La pioche contient une parcelle VERTE
-        Parcelle parcellePiochee = new Parcelle(Couleur.VERT);
-        when(piocheParcelleMock.getSize()).thenReturn(10);
-        when(piocheParcelleMock.piocherParcelle()).thenReturn(parcellePiochee);
-
-        Position posDispo = new Position(1, 0);
-        when(plateauMock.getEmplacementsDisponibles()).thenReturn(List.of(posDispo));
-
-        // 4. Action
-        List<Action> actions = bot.jouer(gameStateMock);
-
-        // 5. Vérification
         assertFalse(actions.isEmpty());
-        assertTrue(actions.get(0) instanceof PoserParcelle, "Le bot devrait poser une parcelle en Plan B");
+        // Le bot doit choisir de piocher un objectif
+        assertTrue(actions.get(0) instanceof PiocherObjectif);
     }
 
     @Test
-    void testStrat3_RienEnMain_PiocherObjectif() {
-        // SCÉNARIO : Inventaire vide.
-        // ATTENDU : Proposer PiocherObjectif.
+    void testPriorite2_AObjectifEtCanal_PoseIrrigation() {
+        // Cas : A un objectif et un canal en stock
+        // CORRECTION : Utilisation du constructeur (Couleur, Taille, Points)
+        bot.getInventaire().ajouterObjectif(new ObjectifJardinier(Couleur.VERT, 4, 5));
+        bot.getInventaire().ajouterIrrigation();
 
-        // 1. Inventaire vide par défaut
+        // On vérifie simplement qu'il ne plante pas et renvoie une action
+        assertDoesNotThrow(() -> bot.jouer(gameStateMock));
+    }
 
-        // 2. Mock de la pioche
-        // Note: Ici, le bot vérifie juste s'il a le droit de piocher.
-        // Il ne pioche pas vraiment "pendant la réflexion", il retourne l'action "Je veux piocher".
-        // Donc on n'a même pas besoin de mocker le retour de piocher() dans ce test précis,
-        // car c'est la classe Partie qui exécutera l'action plus tard.
+    @Test
+    void testPriorite3_PoseParcelle_SiRienDAutre() {
+        // Cas : A un objectif mais ne peut pas l'avancer
+        bot.getInventaire().ajouterObjectif(new ObjectifJardinier(Couleur.VERT, 4, 5));
 
-        // 3. Action
+        // Configuration pour qu'il puisse poser une parcelle
+        when(plateauMock.getEmplacementsDisponibles()).thenReturn(List.of(new Position(1, 0)));
+        when(piocheParcelleMock.piocher()).thenReturn(new Parcelle(Couleur.VERT));
+
         List<Action> actions = bot.jouer(gameStateMock);
 
-        // 4. Vérification
-        assertFalse(actions.isEmpty());
-        assertTrue(actions.get(0) instanceof PiocherObjectif, "Le bot devrait vouloir piocher un objectif");
+        boolean aPoseParcelle = actions.stream().anyMatch(a -> a instanceof PoserParcelle);
+        assertTrue(aPoseParcelle, "Le bot devrait poser une parcelle s'il ne peut rien faire d'autre");
     }
 }

@@ -4,6 +4,7 @@ import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotJardinier;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotRandom;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage.AffichageFinPartie;
 
 import java.util.ArrayList;
@@ -31,10 +32,10 @@ public class Partie {
         int tour = 1;
         boolean partieTerminee = false;
 
-        System.out.println(" DÉBUT DE LA PARTIE : " + OBJECTIFS_POUR_GAGNER + " objectifs pour gagner !");
+        Logger.print(" DÉBUT DE LA PARTIE : " + OBJECTIFS_POUR_GAGNER + " objectifs pour gagner !");
 
-        while (!partieTerminee && tour < 1000) {
-            System.out.println("\n--- Tour " + tour + " ---");
+        while (!partieTerminee && tour < 100) {
+            Logger.print("\n--- Tour " + tour + " ---");
 
             // Boucle sur chaque Joueur
             for (Bot bot : gameState.getJoueurs()) {
@@ -44,7 +45,7 @@ public class Partie {
 
                 // 2. On exécute les actions une par une
                 for (Action action : actionsJouees) {
-                    System.out.println(bot.getNom() + " " + action.toString());
+                    Logger.print(bot.getNom() + " " + action.toString());
                     action.appliquer(gameState, bot);
 
                     // 3. Vérification des objectifs après CHAQUE action
@@ -52,7 +53,7 @@ public class Partie {
 
                     // Condition de victoire
                     if (bot.getNombreObjectifsValides() >= OBJECTIFS_POUR_GAGNER) {
-                        System.out.println(" VICTOIRE ! " + bot.getNom() + " a validé " + OBJECTIFS_POUR_GAGNER + " objectifs !");
+                        Logger.print(" VICTOIRE ! " + bot.getNom() + " a validé " + OBJECTIFS_POUR_GAGNER + " objectifs !");
                         partieTerminee = true;
                         break; // On sort de la boucle des Actions
                     }
@@ -66,8 +67,8 @@ public class Partie {
             tour++;
         }
 
-        if (tour >= 1000) {
-            System.out.println(" La partie a été arrêtée (Trop longue).");
+        if (tour >= 100) {
+            Logger.print(" La partie a été arrêtée (Trop longue).");
         }
 
         afficherResultats();
@@ -75,6 +76,6 @@ public class Partie {
 
     private void afficherResultats() {
         AffichageFinPartie afp = new AffichageFinPartie(gameState);
-        System.out.println(afp.afficher());
+        Logger.print(afp.afficher());
     }
 }

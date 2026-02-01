@@ -13,7 +13,7 @@ class JardinierTest {
 
     @BeforeEach
     void setUp() {
-        jardinier = new Jardinier();
+        jardinier = new Jardinier(plateau);
         plateau = new Plateau();
     }
 

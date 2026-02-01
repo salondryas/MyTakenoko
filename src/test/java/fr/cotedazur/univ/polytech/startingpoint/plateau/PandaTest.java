@@ -16,7 +16,7 @@ class PandaTest {
     @BeforeEach
     void setUp() {
         plateau = new Plateau();
-        panda = new Panda();
+        panda = new Panda(plateau);
     }
 
     @Test

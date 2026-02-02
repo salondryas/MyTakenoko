@@ -4,6 +4,8 @@ import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 
+import java.util.List;
+
 public abstract class Objectif {
     protected final int points;
     protected final TypeObjectif type;
@@ -17,4 +19,5 @@ public abstract class Objectif {
 
     public int getPoints() { return points; }
     public TypeObjectif getType() { return type; }
+    public abstract List<Couleur> getCouleurs();
 }

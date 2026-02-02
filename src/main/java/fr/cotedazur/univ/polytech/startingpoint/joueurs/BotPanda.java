@@ -3,16 +3,19 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifPanda;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives; // IMPORTANT
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 
 public class BotPanda extends Bot {
 
@@ -23,115 +26,142 @@ public class BotPanda extends Bot {
     @Override
     protected Action choisirUneAction(GameState gameState, Set<TypeAction> typesInterdits) {
 
-        // 1. ANALYSE : Quel est mon objectif prioritaire ?
-        ObjectifPanda objectifPrioritaire = choisirMeilleurObjectif();
-
-        // 2. URGENCE : Si je n'ai rien en main, je pioche
-        if (objectifPrioritaire == null) {
-            if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
+        // 0. URGENCE : Si je n'ai AUCUN objectif
+        if (getInventaire().getObjectifs().isEmpty() && !typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
+            if (gameState.getPiochePanda().getTaille() > 0) {
                 return new PiocherObjectif(TypeObjectif.PANDA);
+            } else if (gameState.getPiocheJardinier().getTaille() > 0) {
+                return new PiocherObjectif(TypeObjectif.JARDINIER);
             }
         }
 
-        // Couleur cible (Vert par défaut si pas d'objectif)
-        Couleur couleurCible = (objectifPrioritaire != null) ? objectifPrioritaire.getCouleur() : Couleur.VERT;
-
-        // 3. STRATEGIE PRINCIPALE : Manger du bambou (Déplacer Panda)
-        if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA)) {
-            // A. Essayer de manger la BONNE couleur
-            Action actionMangerCible = tenterMangerBambou(gameState, couleurCible);
-            if (actionMangerCible != null) return actionMangerCible;
-
-            // B. (Optionnel) Sinon, manger n'importe quoi (pour stocker ou embêter les autres)
-            Action actionMangerAutre = tenterMangerNimporteQuoi(gameState);
-            if (actionMangerAutre != null) return actionMangerAutre;
+        // 1. ANALYSE : Lister les couleurs dont j'ai besoin
+        List<Couleur> couleursCibles = new ArrayList<>();
+        for (Objectif objectif : getInventaire().getObjectifs()) {
+            couleursCibles.addAll(objectif.getCouleurs());
         }
 
-        // 4. PLAN B : Faire pousser du bambou (Déplacer Jardinier) pour le manger au prochain tour
+        // 2. LOGISTIQUE : Poser une irrigation si j'en ai une en stock (Action Gratuite ou prioritaire)
+        // Cela permet de débloquer la pousse du bambou immédiatement après
+        if (getInventaire().getNombreCanauxDisponibles() > 0 && !typesInterdits.contains(TypeAction.POSER_IRRIGATION)) {
+            Action actionIrriguer = tenterPoserIrrigationUtile(gameState, couleursCibles);
+            if (actionIrriguer != null) return actionIrriguer;
+        }
+
+        // 3. STRATEGIE PRINCIPALE : Manger du bambou
+        if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA)) {
+            Action actionManger = tenterMangerBambou(gameState, couleursCibles);
+            if (actionManger != null) return actionManger;
+        }
+
+        // 4. PLAN B : Faire pousser du bambou (nécessite de l'eau)
         if (!typesInterdits.contains(TypeAction.DEPLACER_JARDINIER)) {
-            Action actionJardinier = tenterFairePousserPourPanda(gameState, couleurCible);
+            Action actionJardinier = tenterFairePousserPourPanda(gameState, couleursCibles);
             if (actionJardinier != null) return actionJardinier;
         }
 
-        // 5. PLAN C : Poser une parcelle (pour avoir plus de terrain de chasse)
+        // 5. PLAN C : Poser une parcelle (Extension du terrain)
         if (!typesInterdits.contains(TypeAction.POSER_PARCELLE)) {
-            Action actionPose = tenterPoserParcelle(gameState, couleurCible);
+            Action actionPose = tenterPoserParcelle(gameState, couleursCibles);
             if (actionPose != null) return actionPose;
         }
 
-        // 6. DERNIERS RECOURS
-        if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
-            return new PiocherObjectif(TypeObjectif.PANDA);
+        // 6. DERNIER RECOURS (Option 1) : Prendre une irrigation si on est bloqué par le manque d'eau
+        if (!typesInterdits.contains(TypeAction.PRENDRE_IRRIGATION) && getInventaire().getNombreCanauxDisponibles() == 0) {
+            if (aBesoinDIrrigation(gameState, couleursCibles)) {
+                return new ObtenirCanalDirrigation();
+            }
         }
 
-        // Vraiment bloqué ? On bouge le panda n'importe où sans manger
-        if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA)) {
-            List<Position> pos = gameState.getPlateau().getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
-            if (!pos.isEmpty()) return new DeplacerPanda(gameState.getPanda(), pos.get(0));
+        // 7. DERNIER RECOURS (Option 2) : Piocher objectifs
+        if(!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF) && getInventaire().getObjectifs().size() < 3){
+            if (gameState.getPiochePanda().getTaille() > 0) return new PiocherObjectif(TypeObjectif.PANDA);
         }
 
         return null;
     }
 
-    // --- METHODES UTILITAIRES ---
+    // --- NOUVELLES MÉTHODES POUR L'IRRIGATION ---
 
-    private ObjectifPanda choisirMeilleurObjectif() {
-        for (Objectif obj : this.getInventaire().getObjectifs()) {
-            if (obj instanceof ObjectifPanda) {
-                return (ObjectifPanda) obj;
+    /**
+     * Cherche à poser un canal de l'inventaire pour irriguer une parcelle de la bonne couleur.
+     */
+    private Action tenterPoserIrrigationUtile(GameState gameState, List<Couleur> couleursVisees) {
+        Plateau plateau = gameState.getPlateau();
+        Map<Position, Parcelle> parcelles = plateau.getParcellesMap();
+
+        // On parcourt toutes les parcelles du plateau
+        for (Map.Entry<Position, Parcelle> entry : parcelles.entrySet()) {
+            Position pos = entry.getKey();
+            Parcelle parcelle = entry.getValue();
+
+            // Si c'est une parcelle SÈCHE de la couleur qu'on veut
+            if (!parcelle.estIrriguee() && couleursVisees.contains(parcelle.getCouleur())) {
+
+                // On regarde autour d'elle si on peut placer un canal
+                for (PositionsRelatives dir : PositionsRelatives.values()) {
+                    if (dir == PositionsRelatives.ZERO) continue;
+
+                    Position voisin = pos.add(dir.getPosition());
+
+                    // Si on peut mettre un canal ici et qu'il n'y en a pas déjà
+                    if (plateau.peutPlacerCanal(pos, voisin) && !plateau.aCanalEntre(pos, voisin)) {
+                        return new PoserCanalDirrigation(pos, voisin);
+                    }
+                }
             }
         }
         return null;
     }
 
-    private Action tenterMangerBambou(GameState gameState, Couleur couleurVisee) {
+    /**
+     * Vérifie s'il existe des parcelles de la bonne couleur sur le plateau mais qu'elles sont sèches.
+     * Si oui, cela vaut le coup de prendre une irrigation.
+     */
+    private boolean aBesoinDIrrigation(GameState gameState, List<Couleur> couleursVisees) {
+        for (Parcelle p : gameState.getPlateau().getParcellesMap().values()) {
+            if (couleursVisees.contains(p.getCouleur()) && !p.estIrriguee()) {
+                return true; // On a trouvé une parcelle utile mais sèche -> Besoin d'eau !
+            }
+        }
+        return false;
+    }
+
+    private Action tenterMangerBambou(GameState gameState, List<Couleur> couleursVisees) {
         Plateau plateau = gameState.getPlateau();
         Position posPanda = gameState.getPanda().getPositionPanda();
         List<Position> destinations = plateau.getTrajetsLigneDroite(posPanda);
 
         for (Position dest : destinations) {
-            Parcelle parcelle = plateau.getParcelle(dest);
-            // On veut : Bonne couleur ET il y a du bambou à manger (> 0)
-            if (parcelle.getCouleur() == couleurVisee
-                    && plateau.getNombreDeSectionsAPosition(dest) > 0) {
-                return new DeplacerPanda(gameState.getPanda(), dest);
+            if (dest.equals(posPanda)) continue;
+            for (Couleur couleur : couleursVisees) {
+                Parcelle parcelle = plateau.getParcelle(dest);
+                if (parcelle.getCouleur() == couleur && plateau.getNombreDeSectionsAPosition(dest) > 0) {
+                    return new DeplacerPanda(gameState.getPanda(), dest);
+                }
             }
         }
         return null;
     }
 
-    private Action tenterMangerNimporteQuoi(GameState gameState) {
-        Plateau plateau = gameState.getPlateau();
-        List<Position> destinations = plateau.getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
-
-        for (Position dest : destinations) {
-            // On mange le premier truc qui vient
-            if (plateau.getNombreDeSectionsAPosition(dest) > 0) {
-                return new DeplacerPanda(gameState.getPanda(), dest);
-            }
-        }
-        return null;
-    }
-
-    private Action tenterFairePousserPourPanda(GameState gameState, Couleur couleurVisee) {
+    private Action tenterFairePousserPourPanda(GameState gameState, List<Couleur> couleursVisees) {
         Plateau plateau = gameState.getPlateau();
         Position posJardinier = gameState.getJardinier().getPosition();
         List<Position> destinations = plateau.getTrajetsLigneDroite(posJardinier);
 
         for (Position dest : destinations) {
-            Parcelle parcelle = plateau.getParcelle(dest);
-            // On cherche à arroser une parcelle de la couleur du Panda
-            // Elle doit être irriguée pour que ça pousse
-            if (parcelle.getCouleur() == couleurVisee
-                    && parcelle.estIrriguee()
-                    && parcelle.getNbSectionsSurParcelle() < 4) {
-                return new DeplacerJardinier(gameState.getJardinier(), dest);
+            if (dest.equals(posJardinier)) continue;
+            for (Couleur couleurVisee : couleursVisees) {
+                Parcelle parcelle = plateau.getParcelle(dest);
+                if (parcelle.getCouleur() == couleurVisee && parcelle.estIrriguee() && parcelle.getNbSectionsSurParcelle() < 4) {
+                    return new DeplacerJardinier(gameState.getJardinier(), dest);
+                }
             }
         }
         return null;
     }
 
-    private Action tenterPoserParcelle(GameState gameState, Couleur couleurVisee) {
+    private Action tenterPoserParcelle(GameState gameState, List<Couleur> couleursVisees) {
         PiocheParcelle pioche = gameState.getPioche();
         Plateau plateau = gameState.getPlateau();
 
@@ -139,8 +169,15 @@ public class BotPanda extends Bot {
             Parcelle parcellePiochee = pioche.piocherParcelle();
             if (parcellePiochee != null) {
                 List<Position> emplacements = plateau.getEmplacementsDisponibles();
-                Position meilleurEmplacement = emplacements.get(0);
-                return new PoserParcelle(new Parcelle(meilleurEmplacement, parcellePiochee.getCouleur()), meilleurEmplacement);
+
+                // On essaie de poser près de l'étang (0,0) pour irriguer auto
+                for(Position pos : emplacements) {
+                    if (pos.estAdjacent(Plateau.POSITION_ORIGINE)) {
+                        return new PoserParcelle();
+                    }
+                }
+
+                return new PoserParcelle();
             }
         }
         return null;

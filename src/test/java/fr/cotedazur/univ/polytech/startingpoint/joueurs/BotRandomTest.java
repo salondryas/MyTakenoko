@@ -6,7 +6,7 @@ import fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Panda;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;

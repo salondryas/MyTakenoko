@@ -75,10 +75,8 @@ public class Parcelle extends Placable {
         if (o == this) return true;
         if (o == null || o.getClass() != this.getClass()) return false;
         Parcelle parcelle = (Parcelle) o;
-        // Attention : verification de null sur position si parcelles en main
-        boolean memePos = (position == null && parcelle.getPosition() == null) ||
-                (position != null && position.equals(parcelle.getPosition()));
-        return memePos && parcelle.getCouleur().equals(couleur);
+        return Objects.equals(this.getPosition(), parcelle.getPosition()) &&
+                this.getCouleur() == parcelle.getCouleur();
     }
 
     @Override

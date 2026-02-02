@@ -25,20 +25,15 @@ public class Plateau {
     }
 
     public boolean placerParcelle(Parcelle parcelle, Position position) {
-        // 1. Sécurité anti-écrasement
-        if (parcelles.containsKey(position)) {
-            return false; // Impossible, la place est prise
+        if (isPositionDisponible(position)) {
+            parcelles.put(position, parcelle);
+            if (position.estAdjacent(POSITION_ORIGINE)) {
+                parcelle.triggerIrrigation();
+                parcellesIrriguees.add(position);
+            }
+            return true;
         }
-
-        parcelles.put(position, parcelle);
-
-        // 2. Gestion de l'irrigation automatique (adjacent à l'étang)
-        if (position.estAdjacent(POSITION_ORIGINE)) {
-            parcelle.triggerIrrigation();
-            parcellesIrriguees.add(position);
-        }
-
-        return true;
+        return false;
     }
 
     public Parcelle getParcelle(Position position) {
@@ -217,6 +212,14 @@ public class Plateau {
         canaux.add(nouveauCanal);
         irriguerParcellesTouchees(nouveauCanal);
         return true;
+    }
+    /**
+     * Vérifie si un canal existe déjà entre deux positions.
+     * Utile pour les Bots afin d'éviter de proposer des coups inutiles.
+     */
+    public boolean aCanalEntre(Position p1, Position p2) {
+        CanalDirrigation test = new CanalDirrigation(p1, p2);
+        return canaux.contains(test);
     }
 
     private void irriguerParcellesTouchees(CanalDirrigation canal) {

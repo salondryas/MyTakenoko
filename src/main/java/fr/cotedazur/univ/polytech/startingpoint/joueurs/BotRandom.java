@@ -2,9 +2,11 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
+import fr.cotedazur.univ.polytech.startingpoint.actions.PoserParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 import java.util.List;
@@ -17,6 +19,13 @@ public class BotRandom extends Bot {
     public BotRandom(String nom) {
         super(nom);
         this.random = new Random();
+    }
+
+    @Override
+    public Position choisirPosition(Parcelle parcelleChoisie, Plateau plateau) {
+        List<Position> positionsDisponibles = plateau.getEmplacementsDisponibles();
+        Position positionRandom = positionsDisponibles.get(random.nextInt(positionsDisponibles.size()));
+        return positionRandom;
     }
 
     @Override
@@ -35,8 +44,7 @@ public class BotRandom extends Bot {
                         if (!dispos.isEmpty()) {
                             Parcelle p = gameState.getPiocheParcelle().piocher();
                             if (p != null) {
-                                Position pos = dispos.get(random.nextInt(dispos.size()));
-                                return new PoserParcelle(p, pos);
+                                return new PoserParcelle();
                             }
                         }
                     }

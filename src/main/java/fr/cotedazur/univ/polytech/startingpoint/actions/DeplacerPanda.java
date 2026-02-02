@@ -22,7 +22,6 @@ public class DeplacerPanda implements Action {
         Plateau plateau = gameState.getPlateau();
 
         // CORRECTION 1 : On déplace le panda d'abord (C'est l'but de l'action !)
-        // Cette ligne manquait, c'est pour ça que le test échouait.
         panda.setPositionPanda(destination);
 
         // CORRECTION 2 : Ensuite, on regarde s'il y a à manger sur la case d'arrivée

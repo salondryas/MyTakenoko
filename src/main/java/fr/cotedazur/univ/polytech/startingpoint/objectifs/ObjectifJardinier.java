@@ -6,6 +6,8 @@ import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class ObjectifJardinier extends Objectif {
@@ -27,8 +29,9 @@ public class ObjectifJardinier extends Objectif {
     }
     // ------------------------------------------------
 
-    public Couleur getCouleur() {
-        return this.couleur;
+    @Override
+    public List<Couleur> getCouleurs() {
+        return new ArrayList<>(List.of(this.couleur));
     }
 
     public int getTaille() {
@@ -40,7 +43,7 @@ public class ObjectifJardinier extends Objectif {
         Map<Position, Parcelle> parcelles = gameState.getPlateau().getParcellesMap();
 
         for (Parcelle p : parcelles.values()) {
-            if (p.getCouleur() == this.couleur && p.getNbSectionsSurParcelle() >= tailleRequise) {
+            if (p!=null && p.getCouleur() == this.couleur && p.getNbSectionsSurParcelle() >= tailleRequise) {
                 return true;
             }
         }

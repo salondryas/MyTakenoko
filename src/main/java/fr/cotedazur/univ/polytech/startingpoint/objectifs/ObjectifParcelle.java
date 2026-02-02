@@ -6,43 +6,41 @@ import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
+import java.util.List;
 import java.util.Map;
 
 public class ObjectifParcelle extends Objectif {
     private final int nombre;
-    private final Couleur couleur;
-    // L'attribut 'points' est supprimé car géré par la classe mère
+    private final List<Couleur> couleurs;
 
-    // CORRECTION : Ajout de 'int points' pour le passer au constructeur parent
-    public ObjectifParcelle(int points, int nombre, Couleur couleur) {
-        super(points, TypeObjectif.PARCELLE); // Envoi des infos au parent
+    // Constructeur adapté pour prendre une Liste
+    public ObjectifParcelle(int points, int nombre, List<Couleur> couleurs) {
+        super(points, TypeObjectif.PARCELLE);
         this.nombre = nombre;
-        this.couleur = couleur;
+        this.couleurs = couleurs;
     }
 
     @Override
     public boolean valider(GameState gameState, Bot bot) {
         int compteur = 0;
-        // On récupère toutes les parcelles posées sur le plateau
         Map<Position, Parcelle> parcelles = gameState.getPlateau().getParcellesMap();
 
         for (Parcelle p : parcelles.values()) {
-            // On compte celles qui correspondent à la couleur demandée
-            if (p.getCouleur() == this.couleur) {
+            // On vérifie si la couleur de la parcelle fait partie des couleurs acceptées
+            if (couleurs.contains(p.getCouleur())) {
                 compteur++;
             }
         }
-        // Si on a assez de parcelles de la bonne couleur sur le plateau, c'est gagné
         return compteur >= nombre;
     }
 
-    // INDISPENSABLE : Pour que le Bot sache quelle couleur poser
-    public Couleur getCouleur() {
-        return this.couleur;
+    @Override
+    public List<Couleur> getCouleurs() {
+        return this.couleurs;
     }
 
     @Override
     public String toString() {
-        return "Objectif Parcelle : Avoir " + nombre + " parcelles " + couleur + " sur le plateau (" + super.getPoints() + "pts)";
+        return "Objectif Parcelle : Avoir " + nombre + " parcelles " + couleurs + " sur le plateau (" + super.getPoints() + "pts)";
     }
 }

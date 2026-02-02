@@ -6,6 +6,7 @@ import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifJardinier;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.*;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +71,18 @@ class BotJardinierTest {
         bot.getInventaire().ajouterObjectif(new ObjectifJardinier(Couleur.VERT, 4, 5));
         bot.getInventaire().ajouterIrrigation();
 
+        // Autoriser la vérification de disponibilité
+        when(plateauMock.isPositionDisponible(any(Position.class))).thenReturn(true);
+
+        // 4. Action
+        bot.jouer(gameStateMock);
+
+        // 5. Vérification
+        // On vérifie qu'il a pioché
+        verify(piocheParcelleMock, times(3)).piocherParcelle();
+
+        // On vérifie qu'il a posé la parcelle sur le plateau
+        verify(plateauMock, times(1)).placerParcelle(any(Parcelle.class), any(Position.class));
         // On vérifie simplement qu'il ne plante pas et renvoie une action
         assertDoesNotThrow(() -> bot.jouer(gameStateMock));
     }

@@ -3,6 +3,7 @@ package fr.cotedazur.univ.polytech.startingpoint;
 import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotJardinier;
+import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotPanda;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotRandom;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage.AffichageFinPartie;
@@ -18,8 +19,10 @@ public class Partie {
         // 1. On prépare la liste des bots AVANT de créer le GameState
         List<Bot> bots = new ArrayList<>();
 
+        //ICI on choisit les bots qui jouent
         // Joueur 1 : Bot Random
         bots.add(new BotRandom("Bot Random"));
+        //bots.add(new BotPanda("Bot Panda"));
         // Joueur 2 : Bot Jardinier
         bots.add(new BotJardinier("Bot Jardinier"));
 
@@ -34,7 +37,7 @@ public class Partie {
 
         Logger.print(" DÉBUT DE LA PARTIE : " + OBJECTIFS_POUR_GAGNER + " objectifs pour gagner !");
 
-        while (!partieTerminee && tour < 100) {
+        while (!partieTerminee && tour < 200) {
             Logger.print("\n--- Tour " + tour + " ---");
 
             // Boucle sur chaque Joueur
@@ -67,7 +70,7 @@ public class Partie {
             tour++;
         }
 
-        if (tour >= 100) {
+        if (tour >= 200) {
             Logger.print(" La partie a été arrêtée (Trop longue).");
         }
 

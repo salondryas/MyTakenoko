@@ -6,6 +6,7 @@ import fr.cotedazur.univ.polytech.startingpoint.actions.PiocherObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.actions.TypeAction;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.parcelle.CarteParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
@@ -58,28 +59,32 @@ class BotTest {
 
     @Test
     void testVerifierObjectifs_ValidePoints() {
-        // CORRECTION 1 : Constructeur avec List.of(Couleur)
-        // Objectif : 2 points pour 2 parcelles VERTES
-        ObjectifParcelle obj = new ObjectifParcelle(2, 2, List.of(Couleur.VERT));
+        // CORRECTION 1 : Utilisation de CarteParcelle
+        // LIGNE_VERTE vaut 2 points et demande 3 parcelles vertes alignées
+        ObjectifParcelle obj = new ObjectifParcelle(CarteParcelle.LIGNE_VERTE);
         bot.getInventaire().ajouterObjectif(obj);
 
         Plateau plateau = gameState.getPlateau();
 
-        // CORRECTION 2 : Constructeur Parcelle avec Position
-        // On définit les positions explicitement
-        Position pos1 = new Position(1, 0, -1);
-        Position pos2 = new Position(0, 1, -1);
+        // CORRECTION 2 : Construction d'un motif valide (Ligne de 3 Vertes)
+        // Note: On utilise des positions qui forment une ligne droite
+        // (1, -1, 0) est adjacent à l'étang (0,0,0)
+        // (2, -2, 0) est adjacent à (1,-1,0)
+        // (3, -3, 0) est adjacent à (2,-2,0)
+        Position pos1 = new Position(1, -1, 0);
+        Position pos2 = new Position(2, -2, 0);
+        Position pos3 = new Position(3, -3, 0);
 
-        // On place les parcelles sur le plateau (nécessaire pour la validation)
-        // Note : placerParcelle demande (Parcelle, Position), et le constructeur Parcelle demande (Position, Couleur)
+        // On place les parcelles (avec la nouvelle logique plateau, il faut respecter l'adjacence)
         plateau.placerParcelle(new Parcelle(pos1, Couleur.VERT), pos1);
         plateau.placerParcelle(new Parcelle(pos2, Couleur.VERT), pos2);
+        plateau.placerParcelle(new Parcelle(pos3, Couleur.VERT), pos3);
 
         // Action : Le bot vérifie s'il a rempli ses objectifs
         bot.verifierObjectifs(gameState);
 
         // Vérifications
-        assertEquals(2, bot.getScore(), "Le score du bot doit être de 2 points après validation");
+        assertEquals(2, bot.getScore(), "Le score du bot doit être de 2 points (points de LIGNE_VERTE)");
         assertEquals(1, bot.getNombreObjectifsValides(), "Le nombre d'objectifs validés doit être incrémenté");
         assertTrue(bot.getInventaire().getObjectifs().isEmpty(), "L'objectif doit être retiré de l'inventaire après validation");
     }

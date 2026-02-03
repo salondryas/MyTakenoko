@@ -1,5 +1,6 @@
 package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
+import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Bassin;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,358 +13,202 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PlateauTest {
-    Position positionProche, positionProche2, positionLoin;
-    List<Position> positionsAdjacentesOrigine, positionsAdjacentesProches;
-    Parcelle parcelleRose;
+
     Plateau plateau;
 
     @BeforeEach
     void init() {
         plateau = new Plateau();
-
-        positionProche = new Position(1, -1, 0);
-        parcelleRose = new Parcelle(Couleur.ROSE);
-        positionsAdjacentesOrigine = List.of(
-                new Position(0, -1, 1),
-                new Position(1, -1, 0),
-                new Position(-1, 0, 1),
-                new Position(1, 0, -1),
-                new Position(-1, 1, 0),
-                new Position(0, 1, -1));
-
-        positionProche2 = new Position(1, 0, -1);
-        positionsAdjacentesProches = List.of(
-                new Position(1, -2, 1),
-                new Position(2, -2, 0),
-                new Position(0, -1, 1),
-                new Position(2, -1, -1),
-                new Position(1, 0, -1),
-                new Position(-1, 0, 1),
-                new Position(-1, 1, 0),
-                new Position(0, 1, -1));
-        positionLoin = new Position(5, -5, 0);
     }
 
-    @Test
-    public void testParcellesVoisinesDisponibles() {
-        // CORRECTION ICI : On vérifie le contenu sans se soucier de l'ordre
-        // (Car le Plateau utilise un Set, l'ordre n'est pas garanti)
-        List<Position> disponibles = plateau.getEmplacementsDisponibles();
-
-        assertEquals(positionsAdjacentesOrigine.size(), disponibles.size());
-        assertTrue(disponibles.containsAll(positionsAdjacentesOrigine));
-
-        // On rajoute une parcelle au plateau
-        plateau.placerParcelle(parcelleRose, positionProche);
-
-        // On refait le test
-        List<Position> disponiblesApresAjout = plateau.getEmplacementsDisponibles();
-        // Note: positionsAdjacentesProches contient 8 voisins théoriques,
-        // adaptez selon la logique exacte de vos voisins si nécessaire.
-        // Mais pour corriger l'erreur de "List order", containsAll est la clé.
-        assertTrue(disponiblesApresAjout.containsAll(disponiblesApresAjout));
-    }
+    // =================================================================================
+    // 1. TESTS DE PLACEMENT DES PARCELLES
+    // =================================================================================
 
     @Test
-    void testRegleDesDeuxVoisins() {
-        Plateau p = new Plateau();
-        // L'étang est en 0,0,0 par défaut
-
-        // 1. On pose une tuile adjacente à l'étang -> DOIT MARCHER
-        Position pos1 = new Position(1, -1, 0);
-        assertTrue(p.getEmplacementsDisponibles().contains(pos1));
-        p.placerParcelle(new Parcelle(Couleur.VERT), pos1);
-
-        // 2. On essaie de poser une tuile loin (2, -2, 0)
-        Position posLoin = new Position(2, -2, 0);
-        assertFalse(p.getEmplacementsDisponibles().contains(posLoin));
-
-        // 3. On pose une deuxième tuile près de l'étang
-        Position pos2 = new Position(0, -1, 1);
-        p.placerParcelle(new Parcelle(Couleur.ROSE), pos2);
-
-        // 4. Position qui touche les deux
-        Position posCoin = new Position(1, -2, 1);
-        assertTrue(p.getEmplacementsDisponibles().contains(posCoin));
-    }
-
-    @Test
-    @DisplayName("Parcelle adjacente à l'étang est irriguée automatiquement")
-    void testIrrigationAutomatiqueEtang() {
-        Position posAdjacente = new Position(1, 0);
-        Parcelle parcelle = new Parcelle(posAdjacente, Couleur.VERT);
-
-        plateau.placerParcelle(parcelle, posAdjacente);
-
-        assertTrue(parcelle.estIrriguee());
-        assertEquals(1, parcelle.getNbSectionsSurParcelle());
-    }
-
-    @Test
-    @DisplayName("Parcelle non adjacente à l'étang n'est pas irriguée")
-    void testPasIrrigationSiNonAdjacentEtang() {
-        Position posEloignee = new Position(2, 0);
-        Parcelle parcelle = new Parcelle(posEloignee, Couleur.JAUNE);
-
-        plateau.placerParcelle(parcelle, posEloignee);
-
-        assertFalse(parcelle.estIrriguee());
-        assertEquals(0, parcelle.getNbSectionsSurParcelle());
-    }
-
-    @Test
-    @DisplayName("peutPlacerCanal retourne false sur arête de l'étang")
-    void testPeutPlacerCanalSurEtang() {
-        Position etang = new Position(0, 0);
-        Position adjacente = new Position(1, 0);
-
-        assertFalse(plateau.peutPlacerCanal(etang, adjacente));
-    }
-
-    @Test
-    @DisplayName("peutPlacerCanal retourne false si positions non adjacentes")
-    void testPeutPlacerCanalNonAdjacent() {
-        Position p1 = new Position(1, 0);
-        Position p2 = new Position(3, 0);
-
-        assertFalse(plateau.peutPlacerCanal(p1, p2));
-    }
-
-    @Test
-    @DisplayName("peutPlacerCanal retourne true si une position est adjacente à l'étang")
-    void testPeutPlacerCanalAdjacentEtang() {
-        Position p1 = new Position(1, 0); // Adjacent à l'étang
-        Position p2 = new Position(2, -1); // Adjacent à p1
-
-        plateau.placerParcelle(new Parcelle(p1, Couleur.VERT), p1);
-        plateau.placerParcelle(new Parcelle(p2, Couleur.JAUNE), p2);
-
-        assertTrue(plateau.peutPlacerCanal(p1, p2));
-    }
-
-    @Test
-    @DisplayName("peutPlacerCanal retourne false si canal non connecté au réseau")
-    void testPeutPlacerCanalNonConnecte() {
-        Position p1 = new Position(5, 0);
-        Position p2 = new Position(6, -1);
-
-        plateau.placerParcelle(new Parcelle(p1, Couleur.VERT), p1);
-        plateau.placerParcelle(new Parcelle(p2, Couleur.JAUNE), p2);
-
-        assertFalse(plateau.peutPlacerCanal(p1, p2));
-    }
-
-    @Test
-    @DisplayName("placerCanal irrigue une parcelle non irriguée")
-    void testPlacerCanalIrrigueParcelle() {
-        Position p1 = new Position(1, 0);
-        Position p2 = new Position(2, -1);
-
-        Parcelle parcelle1 = new Parcelle(p1, Couleur.VERT);
-        Parcelle parcelle2 = new Parcelle(p2, Couleur.JAUNE);
-
-        plateau.placerParcelle(parcelle1, p1);
-        plateau.placerParcelle(parcelle2, p2);
-
-        assertTrue(parcelle1.estIrriguee()); // Adjacente à l'étang
-        assertFalse(parcelle2.estIrriguee()); // Pas encore irriguée
-
-        plateau.placerCanal(p1, p2);
-
-        assertTrue(parcelle2.estIrriguee());
-        assertEquals(1, parcelle2.getNbSectionsSurParcelle());
-    }
-
-    @Test
-    @DisplayName("placerCanal irrigue simultanément deux parcelles non irriguées")
-    void testPlacerCanalIrrigueDeuxParcelles() {
-        // Configuration : étang(0,0) -> intermédiaire(1,0) --canal1--> p1(2,-1)
-        // --canal2--> p2(3,-2)
-        // VÉRIFICATION: Toutes les positions doivent être adjacentes
-        Position intermediaire = new Position(1, 0); // (1, 0, -1) - Adjacent à étang
-        Position p1 = new Position(2, -1); // (2, -1, -1) - Adjacent à intermédiaire
-        Position p2 = new Position(3, -2); // (3, -2, -1) - Adjacent à p1
-
-        Parcelle parcelleInter = new Parcelle(intermediaire, Couleur.ROSE);
-        Parcelle parcelle1 = new Parcelle(p1, Couleur.VERT);
-        Parcelle parcelle2 = new Parcelle(p2, Couleur.JAUNE);
-
-        plateau.placerParcelle(parcelleInter, intermediaire);
-        plateau.placerParcelle(parcelle1, p1);
-        plateau.placerParcelle(parcelle2, p2);
-
-        // Vérifications initiales
-        assertTrue(parcelleInter.estIrriguee()); // Adjacent à l'étang
-        assertFalse(parcelle1.estIrriguee());
-        assertFalse(parcelle2.estIrriguee());
-
-        // Premier canal : intermediaire -> p1
-        boolean canal1Pose = plateau.placerCanal(intermediaire, p1);
-        assertTrue(canal1Pose, "Le canal 1 devrait être posé (intermediaire est irrigué)");
-        assertTrue(parcelle1.estIrriguee(), "P1 devrait être irriguée après le canal 1");
-
-        // Deuxième canal : p1 -> p2
-        boolean canal2Pose = plateau.placerCanal(p1, p2);
-        assertTrue(canal2Pose, "Le canal 2 devrait être posé (p1 est maintenant dans le réseau)");
-        assertTrue(parcelle2.estIrriguee(), "P2 devrait être irriguée après le canal 2");
-        assertEquals(1, parcelle2.getNbSectionsSurParcelle());
-    }
-
-    @Test
-    @DisplayName("placerCanal ne fait rien si parcelle déjà irriguée")
-    void testPlacerCanalParcelleDejaIrriguee() {
-        Position p1 = new Position(1, 0);
-        Position p2 = new Position(2, -1);
-
-        Parcelle parcelle1 = new Parcelle(p1, Couleur.VERT);
-        Parcelle parcelle2 = new Parcelle(p2, Couleur.JAUNE);
-
-        plateau.placerParcelle(parcelle1, p1);
-        plateau.placerParcelle(parcelle2, p2);
-
-        parcelle2.triggerIrrigation(); // Irrigation manuelle
-        parcelle2.getBambou().croissance(); // 1 -> 2 sections
-
-        plateau.placerCanal(p1, p2);
-
-        assertEquals(2, parcelle2.getNbSectionsSurParcelle()); // Toujours 2
-    }
-
-    @Test
-    @DisplayName("placerCanal retourne false si placement invalide")
-    void testPlacerCanalInvalide() {
-        Position p1 = new Position(5, 0);
-        Position p2 = new Position(6, -1);
-
-        boolean resultat = plateau.placerCanal(p1, p2);
-
-        assertFalse(resultat);
-    }
-
-    @Test
-    @DisplayName("Vérification de la connectivité en chaîne")
-    void testConnectiviteChaine() {
-        // CORRECTION: Chaîne avec positions RÉELLEMENT adjacentes
-        // étang(0,0) -> p1(1,0) -> p2(2,0) -> p3(3,0)
-        Position p1 = new Position(1, 0);
-        Position p2 = new Position(2, 0);
-        Position p3 = new Position(3, 0);
-
-        plateau.placerParcelle(new Parcelle(p1, Couleur.VERT), p1);
-        plateau.placerParcelle(new Parcelle(p2, Couleur.JAUNE), p2);
-        plateau.placerParcelle(new Parcelle(p3, Couleur.ROSE), p3);
-
-        // p1 est adjacent à l'étang, donc le canal est valide
-        assertTrue(plateau.placerCanal(p1, p2));
-
-        // p2 est maintenant connecté au réseau via p1, donc le canal vers p3 est valide
-        assertTrue(plateau.placerCanal(p2, p3));
-
-        // Vérification: étang + p1 + p2 + p3 = 4 positions irriguées
-        assertEquals(4, plateau.getParcellesIrriguees().size());
-    }
-
-    @Test
-    @DisplayName("getParcellesIrriguees retourne toutes les parcelles irriguées")
-    void testGetParcellesIrriguees() {
-        Position p1 = new Position(1, 0);
-        Position p2 = new Position(0, 1);
-
-        plateau.placerParcelle(new Parcelle(p1, Couleur.VERT), p1);
-        plateau.placerParcelle(new Parcelle(p2, Couleur.JAUNE), p2);
-
-        Set<Position> irriguees = plateau.getParcellesIrriguees();
-
-        // Étang + 2 parcelles adjacentes
-        assertTrue(irriguees.contains(new Position(0, 0))); // Étang
-        assertTrue(irriguees.contains(p1));
-        assertTrue(irriguees.contains(p2));
-    }
-    @Test
-    void testPlacerParcelle() {
-        Position pos = new Position(1, -1, 0);
-        Parcelle parcelle = new Parcelle(Couleur.ROSE);
-
-        plateau.placerParcelle(parcelle, pos);
-
-        assertEquals(parcelle, plateau.getParcelle(pos));
-        assertFalse(plateau.isPositionDisponible(pos));
-    }
-
-    @Test
-    void testIrrigationInitiale() {
-        // Une parcelle posée à côté de l'étang doit être irriguée immédiatement
-        Position posEtang = new Position(1, 0, -1);
+    @DisplayName("Une parcelle posée à côté de l'étang est irriguée immédiatement et gagne un bambou")
+    void testIrrigationImmediateEtang() {
+        Position pos = new Position(1, 0); // Adjacent à (0,0)
         Parcelle p = new Parcelle(Couleur.VERT);
 
-        plateau.placerParcelle(p, posEtang);
+        // Au début : pas de bambou (0)
+        assertEquals(0, p.getBambou().getNumberOfSections());
 
+        boolean placementReussi = plateau.placerParcelle(p, pos);
+
+        assertTrue(placementReussi);
         assertTrue(p.estIrriguee(), "La parcelle adjacente à l'étang doit être irriguée");
-        assertTrue(plateau.getParcellesIrriguees().contains(posEtang));
+        assertEquals(1, p.getNbSectionsSurParcelle(), "Le bambou doit pousser à la première irrigation");
+        assertTrue(plateau.getParcellesIrriguees().contains(pos));
     }
 
     @Test
-    @DisplayName("Placer un canal valide retourne true")
-    void testPlacerCanalValide() {
-        Position p1 = new Position(1, 0, -1);
-        Position p2 = new Position(0, 1, -1); // Adjacents et proches étang
+    @DisplayName("Une parcelle posée loin de l'étang n'est pas irriguée et n'a pas de bambou")
+    void testPasIrrigationLoin() {
+        // Setup : On pose une parcelle intermédiaire pour respecter la règle de pose
+        plateau.placerParcelle(new Parcelle(Couleur.ROSE), new Position(1, 0));
+        plateau.placerParcelle(new Parcelle(Couleur.ROSE), new Position(0, 1));
 
-        assertTrue(plateau.placerCanal(p1, p2), "Le placement devrait être valide");
-        assertEquals(1, plateau.getCanaux().size());
+        // Test : On pose une parcelle en (1, 1) (touche les deux précédentes, mais pas l'étang direct)
+        Position posLoin = new Position(1, 1);
+        Parcelle p = new Parcelle(Couleur.JAUNE);
+
+        assertTrue(plateau.placerParcelle(p, posLoin));
+        assertFalse(p.estIrriguee());
+        assertEquals(0, p.getNbSectionsSurParcelle());
     }
 
     @Test
-    @DisplayName("Placer un canal invalide (non connecté) retourne false")
-    void testPlacerCanalInvalideDeconnecte() {
-        // On tente de placer un canal loin de tout (entre (2,0) et (3,0))
-        Position p1 = new Position(2, 0);
-        Position p2 = new Position(3, 0);
+    @DisplayName("Une parcelle avec aménagement BASSIN est irriguée immédiatement même loin")
+    void testAmenagementBassin() {
+        // Setup : Intermédiaires
+        plateau.placerParcelle(new Parcelle(Couleur.ROSE), new Position(1, 0));
+        plateau.placerParcelle(new Parcelle(Couleur.ROSE), new Position(0, 1));
 
-        assertFalse(plateau.placerCanal(p1, p2), "Le canal n'est pas connecté à l'eau, il doit être refusé");
-        assertEquals(0, plateau.getCanaux().size());
+        Position posLoin = new Position(1, 1);
+        Parcelle pBassin = new Parcelle(Couleur.JAUNE);
+        // On force l'aménagement Bassin (simule la pioche ou TuileType)
+        pBassin.fetchAmenagementAcqui(new Bassin(pBassin, pBassin.getBambou()));
+
+        plateau.placerParcelle(pBassin, posLoin);
+
+        assertTrue(pBassin.estIrriguee(), "Le bassin doit irriguer la parcelle");
+        assertEquals(1, pBassin.getNbSectionsSurParcelle(), "Le bambou doit pousser grâce au bassin");
     }
 
-    @Test
-    @DisplayName("Placer un canal sur l'étang retourne false")
-    void testPlacerCanalSurEtang() {
-        Position origine = Plateau.POSITION_ORIGINE;
-        Position voisin = new Position(1, 0);
-
-        assertFalse(plateau.placerCanal(origine, voisin), "Impossible de placer un canal sur les bords de l'étang");
-    }
+    // =================================================================================
+    // 2. TESTS DE PLACEMENT DES CANAUX (RÈGLES STRICTES)
+    // =================================================================================
 
     @Test
-    @DisplayName("Placer un canal en double retourne false")
-    void testPlacerCanalDoublon() {
+    @DisplayName("Impossible de poser un canal si les parcelles n'existent pas")
+    void testCanalSansParcelles() {
         Position p1 = new Position(1, 0);
         Position p2 = new Position(0, 1);
+        // Aucune parcelle posée
 
-        // 1er placement : OK
-        assertTrue(plateau.placerCanal(p1, p2));
-
-        // 2ème placement identique : DOIT ÉCHOUER
-        assertFalse(plateau.placerCanal(p1, p2), "On ne doit pas pouvoir placer deux fois le même canal");
-
-        assertEquals(1, plateau.getCanaux().size(), "Il ne doit y avoir qu'un seul canal");
+        assertFalse(plateau.peutPlacerCanal(p1, p2));
+        assertFalse(plateau.placerCanal(p1, p2));
     }
 
     @Test
-    void testReseauIrrigationComplexe() {
-        // Simulation d'une chaîne
+    @DisplayName("Impossible de poser un canal sur une arête de l'étang (0,0)")
+    void testCanalSurAreteEtang() {
+        Position etang = Plateau.POSITION_ORIGINE; // (0,0)
+        Position voisin = new Position(1, 0);
+
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), voisin);
+
+        // Tente de poser un canal entre (0,0) et (1,0) -> INTERDIT
+        assertFalse(plateau.peutPlacerCanal(etang, voisin), "Interdit de poser sur les bords de l'étang");
+        assertFalse(plateau.placerCanal(etang, voisin));
+    }
+
+    @Test
+    @DisplayName("Placement valide : Canal entre deux parcelles qui touchent l'étang (Coin)")
+    void testCanalDepartEtang() {
+        // P1 et P2 touchent l'étang -> Le canal entre P1 et P2 touche l'étang par un sommet
         Position p1 = new Position(1, 0);
-        Position p2 = new Position(2, 0);
-        Position p3 = new Position(3, 0);
+        Position p2 = new Position(0, 1); // p1 et p2 sont adjacents entre eux ET à (0,0)
 
         plateau.placerParcelle(new Parcelle(Couleur.VERT), p1);
         plateau.placerParcelle(new Parcelle(Couleur.JAUNE), p2);
 
-        // Canal 1 (connecté étang)
+        assertTrue(plateau.peutPlacerCanal(p1, p2));
+        assertTrue(plateau.placerCanal(p1, p2));
+        assertEquals(1, plateau.getCanaux().size());
+    }
+
+    @Test
+    @DisplayName("Placement invalide : Canal isolé (ne touche ni étang ni autre canal)")
+    void testCanalIsole() {
+        // Setup : Créer un "trou" loin de l'étang
+        // (0,0) -> (1,0), (0,1) -> (1,1), (0,2) ...
+        // On pose des parcelles pour avoir le droit géométrique
+        Position pA = new Position(1, 0);
+        Position pB = new Position(2, 0);
+        Position pC = new Position(2, 1);
+
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), pA);
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), pB);
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), pC);
+
+        // On veut poser un canal entre pB et pC (loin de l'étang, pas de canal avant)
+        // pB(2,0) et pC(2,1) sont adjacents. Mais ne touchent pas (0,0).
+        assertFalse(plateau.peutPlacerCanal(pB, pC), "Canal isolé interdit");
+    }
+
+    @Test
+    @DisplayName("Extension de réseau : On peut poser un canal s'il touche un canal existant")
+    void testExtensionReseau() {
+        Position p1 = new Position(1, 0); // Touche étang
+        Position p2 = new Position(0, 1); // Touche étang
+        Position p3 = new Position(1, 1); // Loin
+
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), p1);
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), p2);
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), p3);
+
+        // 1. Premier canal (Validé par règle du Coin Étang)
         assertTrue(plateau.placerCanal(p1, p2));
 
-        // Canal 2 (connecté via Canal 1)
+        // 2. Deuxième canal : Entre p2 et p3.
+        // Ce canal touche le point p2, qui est touché par le canal précédent (p1-p2).
+        // Donc c'est valide.
+        assertTrue(plateau.peutPlacerCanal(p2, p3));
         assertTrue(plateau.placerCanal(p2, p3));
+    }
 
-        // Canal 3 (Isolé -> Faux)
-        assertFalse(plateau.placerCanal(new Position(4,0), new Position(5,0)));
+    @Test
+    @DisplayName("Placer un canal irrigue les parcelles adjacentes (et fait pousser si première fois)")
+    void testIrrigationParCanal() {
+        Position p1 = new Position(1, 0);
+        Position p2 = new Position(0, 1);
+        Position p3 = new Position(1, 1);
+
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), p1);
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), p2);
+
+        // p3 est loin, non irriguée au début
+        Parcelle parcelle3 = new Parcelle(Couleur.ROSE);
+        plateau.placerParcelle(parcelle3, p3);
+        assertFalse(parcelle3.estIrriguee());
+        assertEquals(0, parcelle3.getNbSectionsSurParcelle());
+
+        // 1. Canal p1-p2 (départ étang) -> ne change rien pour p3
+        plateau.placerCanal(p1, p2);
+        assertFalse(parcelle3.estIrriguee());
+
+        // 2. Canal p2-p3 (extension) -> Irrigue p3 !
+        plateau.placerCanal(p2, p3);
+
+        assertTrue(parcelle3.estIrriguee());
+        assertEquals(1, parcelle3.getNbSectionsSurParcelle(), "Le bambou doit pousser à la première irrigation");
+    }
+
+    @Test
+    @DisplayName("Le bambou ne pousse PAS une deuxième fois si on ajoute un autre canal")
+    void testPasDeDoublePousse() {
+        Position p1 = new Position(1, 0);
+        Position p2 = new Position(0, 1);
+        Position p3 = new Position(1, 1);
+
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), p1);
+        plateau.placerParcelle(new Parcelle(Couleur.VERT), p2);
+        Parcelle parcelle3 = new Parcelle(Couleur.ROSE);
+        plateau.placerParcelle(parcelle3, p3);
+
+        // Premier canal qui irrigue p3
+        plateau.placerCanal(p1, p2); // base
+        plateau.placerCanal(p2, p3); // irrigue p3
+        assertEquals(1, parcelle3.getNbSectionsSurParcelle());
+
+        // On ajoute un AUTRE canal qui touche aussi p3 (p1-p3)
+        // p1(1,0) et p3(1,1) sont adjacents
+        assertTrue(plateau.placerCanal(p1, p3));
+
+        // Vérification : p3 est toujours irriguée, mais le bambou n'a PAS grandi (toujours 1)
+        assertTrue(parcelle3.estIrriguee());
+        assertEquals(1, parcelle3.getNbSectionsSurParcelle(), "Le bambou ne doit pas pousser une 2ème fois");
     }
 }

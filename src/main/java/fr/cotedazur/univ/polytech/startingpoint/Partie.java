@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Partie {
     private GameState gameState;
-    static final int OBJECTIFS_POUR_GAGNER = 3;
+    static final int OBJECTIFS_POUR_GAGNER = 9;
 
     public Partie() {
         // 1. On prépare la liste des bots AVANT de créer le GameState
@@ -37,7 +37,7 @@ public class Partie {
 
         Logger.print(" DÉBUT DE LA PARTIE : " + OBJECTIFS_POUR_GAGNER + " objectifs pour gagner !");
 
-        while (!partieTerminee && tour < 200) {
+        while (!partieTerminee && tour < 1000) {
             Logger.print("\n--- Tour " + tour + " ---");
 
             // Boucle sur chaque Joueur
@@ -70,7 +70,7 @@ public class Partie {
             tour++;
         }
 
-        if (tour >= 200) {
+        if (tour >= 1000) {
             Logger.print(" La partie a été arrêtée (Trop longue).");
         }
 

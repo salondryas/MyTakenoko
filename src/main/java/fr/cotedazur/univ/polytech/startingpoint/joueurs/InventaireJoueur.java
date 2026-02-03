@@ -48,6 +48,11 @@ public class InventaireJoueur {
     }
 
     public void ajouterBambou(Couleur couleur) {
+        // CORRECTION : On vérifie que la couleur est valide et existe dans la map
+        if (couleur == Couleur.AUCUNE || !bambous.containsKey(couleur)) {
+            return; // On ne fait rien si c'est l'étang ou une couleur invalide
+        }
+
         int nombreBambouCouleur = bambous.get(couleur);
         bambous.put(couleur, ++nombreBambouCouleur);
     }

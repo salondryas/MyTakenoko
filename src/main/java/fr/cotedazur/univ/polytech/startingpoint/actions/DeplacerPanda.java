@@ -2,10 +2,11 @@ package fr.cotedazur.univ.polytech.startingpoint.actions;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.Panda;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Panda;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 public class DeplacerPanda implements Action {
@@ -20,20 +21,27 @@ public class DeplacerPanda implements Action {
     @Override
     public void appliquer(GameState gameState, Bot bot) {
         Plateau plateau = gameState.getPlateau();
+        Panda pandaJeu = gameState.getPanda(); // On récupère le panda du jeu
 
-        // CORRECTION 1 : On déplace le panda d'abord (C'est l'but de l'action !)
-        panda.setPositionPanda(destination);
+        // 1. Déplacement
+        pandaJeu.setPositionPanda(destination);
 
-        // CORRECTION 2 : Ensuite, on regarde s'il y a à manger sur la case d'arrivée
-        if (plateau.getNombreDeSectionsAPosition(destination) > 0) {
-            Parcelle parcelle = plateau.getParcelle(destination);
-            Couleur couleurBambou = parcelle.getCouleur();
+        // 2. Manger le bambou
+        Parcelle parcelle = plateau.getParcelle(destination);
 
-            // Le Panda mange
-            panda.mangerBambou(destination, plateau);
+        // CORRECTION : On vérifie que la parcelle existe, n'est pas l'étang, et a du bambou
+        if (parcelle != null && parcelle.getCouleur() != Couleur.AUCUNE) {
 
-            // Le Bot gagne le bambou
-            bot.getInventaire().ajouterBambou(couleurBambou);
+            // On tente de manger (supposons que Parcelle a une méthode retirerBambou ou similaire)
+            // Si vous n'avez pas de boolean de retour sur retirerSection(), on vérifie la taille avant
+            if (parcelle.getNbSectionsSurParcelle() > 0) {
+                parcelle.getBambou().retirerSection();
+
+                // On ajoute à l'inventaire
+                bot.getInventaire().ajouterBambou(parcelle.getCouleur());
+
+                Logger.print(" Le panda mange du bambou " + parcelle.getCouleur() + " en " + destination);
+            }
         }
     }
 

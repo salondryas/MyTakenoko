@@ -1,4 +1,5 @@
 package fr.cotedazur.univ.polytech.startingpoint.objectifs.parcelle;
+
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives;
@@ -60,9 +61,9 @@ public enum CarteParcelle {
 
     // La configuration demandée est-elle correspond-elle ?
     public boolean estValide(Plateau plateau) {
-
-        // On parcourt toutes les tuiles du plateau pour tester à chaque fois si on a une configuration valide
-        for (Position positionAncrage : plateau.getPositionOccupees()) {
+        // CORRECTION ICI : Utilisation de getParcellesMap().keySet()
+        // au lieu de getPositionOccupees() qui n'existe plus dans le nouveau Plateau
+        for (Position positionAncrage : plateau.getParcellesMap().keySet()) {
             if (verifierMotifDepuisAncrage(positionAncrage, plateau)){
                 return true; // L'objectif est réalisé
             }
@@ -94,6 +95,10 @@ public enum CarteParcelle {
             // Si la parcelle n'existe pas ou n'est pas de la bonne couleur, la parcelle n'est pas valide
             if (parcellePlateau == null) return false;
             if (parcellePlateau.getCouleur() != parcelleRelative.getCouleur()) return false;
+
+            // Note : Pour les objectifs parcelle, on vérifie aussi souvent qu'elle est irriguée
+            // dans les règles complètes (optionnel selon votre implémentation actuelle)
+            // if (!parcellePlateau.estIrriguee()) return false;
         }
         // Toutes les parcelles du motif à vérifier ont les configurations attendues
         return true;

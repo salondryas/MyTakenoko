@@ -3,8 +3,10 @@ package fr.cotedazur.univ.polytech.startingpoint.objectifs;
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotRandom;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.Arrangement;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Bassin;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,41 +24,52 @@ class ObjectifJardinierTest {
 
     @BeforeEach
     void setUp() {
-        // CORRECTION : On doit passer une liste de bots au GameState
         bot = new BotRandom("JardinierBot");
         gameState = new GameState(List.of(bot));
-
         plateau = gameState.getPlateau();
     }
 
     @Test
-    void validerObjectifJardinier() {
-        // Grâce au constructeur 2 ajouté ci-dessus, cette ligne fonctionne :
+    void validerObjectifJardinierSimple() {
+        // Objectif : Bambou VERT de taille 4 (Sans aménagement spécial)
         ObjectifJardinier objVert4 = new ObjectifJardinier(Couleur.VERT, 4, 5);
 
-        // Position adjacente à l'étang (1,-1) -> Sera irriguée automatiquement
-        Position pos = new Position(1, -1);
+        Position pos = new Position(1, -1); // Adjacent Étang
         Parcelle parcelleVerte = new Parcelle(pos, Couleur.VERT);
+        plateau.placerParcelle(parcelleVerte, pos); // Irriguée auto -> taille = 1
 
-        // Au placement, comme c'est adjacent à (0,0), l'irrigation se déclenche (Taille = 1)
-        plateau.placerParcelle(parcelleVerte, pos);
-
-        // Taille actuelle = 1. Objectif = 4. -> Faux
-        assertFalse(objVert4.valider(gameState, bot));
-
-        // On fait pousser 3 fois (1 -> 2 -> 3 -> 4)
-        parcelleVerte.pousserBambou();
-        parcelleVerte.pousserBambou();
-        parcelleVerte.pousserBambou();
-
-        // Note : Si ta logique d'irrigation initialise à 0 au lieu de 1,
-        // tu auras peut-être besoin d'un 4ème pousserBambou().
-        // Le code ci-dessous gère le cas :
-        if (parcelleVerte.getNbSectionsSurParcelle() < 4) {
+        // On fait pousser jusqu'à 4
+        while(parcelleVerte.getNbSectionsSurParcelle() < 4) {
             parcelleVerte.pousserBambou();
         }
 
         assertTrue(objVert4.valider(gameState, bot), "L'objectif devrait être validé avec un bambou de taille 4");
+    }
+
+    @Test
+    void validerObjectifJardinierAvecBassin() {
+        // NOUVEAU TEST : Objectif Bambou VERT taille 4 AVEC BASSIN
+        ObjectifJardinier objBassin = new ObjectifJardinier(Couleur.VERT, 4, 6, Arrangement.BASSIN);
+
+        Position pos = new Position(1, 0); // Adjacent Étang
+        Parcelle parcelle = new Parcelle(pos, Couleur.VERT);
+        plateau.placerParcelle(parcelle, pos);
+
+        // On fait pousser le bambou au max (taille 4)
+        while(parcelle.getNbSectionsSurParcelle() < 4) {
+            parcelle.pousserBambou();
+        }
+
+        // Test 1 : Bambou taille 4 mais PAS de bassin -> DOIT ÉCHOUER
+        assertFalse(objBassin.valider(gameState, bot),
+                "L'objectif exige un Bassin, il ne doit pas être validé sans.");
+
+        // Test 2 : On ajoute l'aménagement Bassin
+        new Bassin(parcelle, parcelle.getBambou()); // L'attache automatiquement
+
+        // Maintenant -> DOIT RÉUSSIR
+        assertTrue(objBassin.valider(gameState, bot),
+                "L'objectif devrait être validé car la parcelle a maintenant un Bassin.");
     }
 
     @Test
@@ -65,12 +78,12 @@ class ObjectifJardinierTest {
         Position pos = new Position(1, 0);
         Parcelle parcelleVerte = new Parcelle(pos, Couleur.VERT);
 
-        plateau.placerParcelle(parcelleVerte, pos); // Irriguée auto
+        plateau.placerParcelle(parcelleVerte, pos);
 
-        // On fait grandir le bambou vert au max
-        for(int i=0; i<4; i++) parcelleVerte.pousserBambou();
+        while(parcelleVerte.getNbSectionsSurParcelle() < 4) {
+            parcelleVerte.pousserBambou();
+        }
 
-        // On a un grand bambou VERT, mais on veut du ROSE -> Faux
-        assertFalse(objRose.valider(gameState, bot));
+        assertFalse(objRose.valider(gameState, bot), "Couleur incorrecte");
     }
 }

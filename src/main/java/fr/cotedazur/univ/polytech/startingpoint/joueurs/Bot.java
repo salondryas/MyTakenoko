@@ -3,12 +3,9 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
 import fr.cotedazur.univ.polytech.startingpoint.actions.TypeAction;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 import java.util.*;
@@ -28,42 +25,39 @@ public abstract class Bot {
 
     protected abstract Action choisirUneAction(GameState gameState, Set<TypeAction> typesInterdits);
 
+    /**
+     * Méthode principale appelée par le moteur de jeu.
+     * Gère la boucle de prise de décision pour (NombreActionsParTour) actions.
+     */
     public List<Action> jouer(GameState gameState) {
         List<Action> actionsChoisies = new ArrayList<>();
-        Set<TypeAction> typesDejaFaits = new HashSet<>();
-        int tentatives = 0;
+        Set<TypeAction> typesInterdits = new HashSet<>();
 
-        // MODIFICATION ICI : On utilise la constante (1 action)
-        while (actionsChoisies.size() < NombreActionsParTour && tentatives < 50) {
-            Action actionProposee = choisirUneAction(gameState, typesDejaFaits);
+        // Le bot doit choisir X actions
+        for (int i = 0; i < NombreActionsParTour; i++) {
+            Action action = choisirUneAction(gameState, typesInterdits);
 
-            if (actionProposee != null && !typesDejaFaits.contains(actionProposee.getType())) {
-                actionsChoisies.add(actionProposee);
-                typesDejaFaits.add(actionProposee.getType());
-                Logger.print(nom + " choisit l'action : " + actionProposee);
-            }
-            tentatives++;
+            // Sécurité : si le bot ne sait pas quoi faire (null), on arrête son tour
+            if (action == null) break;
+
+            actionsChoisies.add(action);
+            typesInterdits.add(action.getType()); // On ne peut pas refaire la même action
         }
-
-        verifierObjectifs(gameState);
 
         return actionsChoisies;
     }
 
     public void verifierObjectifs(GameState gameState) {
-        List<Objectif> objectifsAValider = new ArrayList<>();
+        // Copie défensive pour éviter ConcurrentModificationException si on retire un objectif en itérant
+        List<fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif> objectifsACheck = new ArrayList<>(inventaire.getObjectifs());
 
-        for (Objectif obj : inventaire.getObjectifs()) {
+        for (fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif obj : objectifsACheck) {
             if (obj.valider(gameState, this)) {
-                Logger.print(nom + " a validé l'objectif : " + obj);
-                objectifsAValider.add(obj);
+                fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger.print(getNom() + " a validé l'objectif : " + obj.toString());
+                inventaire.ajouterPoints(obj.getPoints());
+                inventaire.incrementerObjectifsValides();
+                inventaire.retirerObjectif(obj);
             }
-        }
-
-        for (Objectif obj : objectifsAValider) {
-            inventaire.ajouterPoints(obj.getPoints());
-            inventaire.incrementerObjectifsValides();
-            inventaire.retirerObjectif(obj);
         }
     }
 
@@ -100,6 +94,12 @@ public abstract class Bot {
         return inventaire;
     }
 
+    // AJOUT NECESSAIRE POUR LE BOT STRATÉGIQUE
+    // Permet de synchroniser l'inventaire entre le Chef et ses Sous-Bots
+    protected void setInventaire(InventaireJoueur inventairePartage) {
+        this.inventaire = inventairePartage;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -108,8 +108,7 @@ public abstract class Bot {
     }
 
     @Override
-    public int hashCode() { return Objects.hash(nom); }
-
-    @Override
-    public String toString() { return nom + " (" + getScore() + " pts)"; }
+    public int hashCode() {
+        return Objects.hash(nom);
+    }
 }

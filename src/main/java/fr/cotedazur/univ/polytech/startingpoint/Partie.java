@@ -1,10 +1,7 @@
 package fr.cotedazur.univ.polytech.startingpoint;
 
 import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
-import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
-import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotJardinier;
-import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotPanda;
-import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotRandom;
+import fr.cotedazur.univ.polytech.startingpoint.joueurs.*;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage.AffichageFinPartie;
 
@@ -21,10 +18,10 @@ public class Partie {
 
         //ICI on choisit les bots qui jouent
         // Joueur 1 : Bot Random
-        bots.add(new BotRandom("Bot Random"));
+        bots.add(new BotExpert("Bot A"));
         //bots.add(new BotPanda("Bot Panda"));
         // Joueur 2 : Bot Jardinier
-        bots.add(new BotJardinier("Bot Jardinier"));
+        bots.add(new BotRandom("Bot B"));
 
         // 2. On passe la liste au constructeur de GameState
         // C'est ici que l'erreur est corrigée (on passe 1 argument)

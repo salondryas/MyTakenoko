@@ -1,6 +1,7 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.AmenagmentAttribuable;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage.AfficherInventaireJoueur;
 
@@ -12,9 +13,11 @@ import java.util.Map;
 public class InventaireJoueur {
     private int score;
     private List<Objectif> objectifs; // Objectifs à réaliser en main
-    private Map<Couleur,Integer> bambous;    // Sections de bambous mangées (stockées par couleur)
+    private Map<Couleur, Integer> bambous; // Sections de bambous mangées (stockées par couleur)
     private int nombreObjectifsValides = 0;
     private int nombreCanauxDisponibles; // Nombre de canaux d'irrigation disponibles
+
+    private List<AmenagmentAttribuable> amenagements; // Attribut pour stocker les aménagements reçus via météo NUAGES
 
     public InventaireJoueur() {
         this.score = 0;
@@ -22,9 +25,10 @@ public class InventaireJoueur {
         this.nombreCanauxDisponibles = 0;
 
         this.bambous = new HashMap<>();
-        bambous.put(Couleur.ROSE,0);
-        bambous.put(Couleur.VERT,0);
-        bambous.put(Couleur.JAUNE,0);
+        bambous.put(Couleur.ROSE, 0);
+        bambous.put(Couleur.VERT, 0);
+        bambous.put(Couleur.JAUNE, 0);
+        this.amenagements = new ArrayList<>();
     }
 
     public void ajouterObjectif(Objectif objectif) {
@@ -66,7 +70,7 @@ public class InventaireJoueur {
         return true;
     }
 
-    public Map<Couleur,Integer> getBambous() {
+    public Map<Couleur, Integer> getBambous() {
         return bambous;
     }
 
@@ -75,7 +79,7 @@ public class InventaireJoueur {
     }
 
     public int getTotalNumberOfBambous() {
-        return bambous.get(Couleur.ROSE)+bambous.get(Couleur.VERT)+bambous.get(Couleur.JAUNE);
+        return bambous.get(Couleur.ROSE) + bambous.get(Couleur.VERT) + bambous.get(Couleur.JAUNE);
     }
 
     public void incrementerObjectifsValides() {
@@ -104,6 +108,29 @@ public class InventaireJoueur {
 
     public boolean aDesCanaux() {
         return nombreCanauxDisponibles > 0;
+    }
+
+    // ===== METEO =====
+
+    public void ajouterAmenagement(AmenagmentAttribuable amenagement) {
+        this.amenagements.add(amenagement);
+    }
+
+    public List<AmenagmentAttribuable> getAmenagements() {
+        return new ArrayList<>(amenagements);
+    }
+
+    public boolean retirerAmenagement(AmenagmentAttribuable amenagement) {
+        return amenagements.remove(amenagement);
+    }
+
+    // Méthode pour vérifier si le joueur a un type d'aménagement
+    public boolean hasAmenagement(AmenagmentAttribuable amenagement) {
+        return amenagements.contains(amenagement);
+    }
+
+    public int getNombreAmenagements() {
+        return amenagements.size();
     }
 
     @Override

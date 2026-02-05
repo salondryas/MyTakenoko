@@ -1,12 +1,14 @@
 package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
+import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+
+import java.util.List;
 
 public class Jardinier {
     private Position position;
     private final Plateau plateau; // Référence au plateau
 
-    // CORRECTION : On demande le Plateau à la création
     public Jardinier(Plateau plateau) {
         this.plateau = plateau;
         // Le Jardinier commence toujours à l'étang (0,0)
@@ -21,5 +23,8 @@ public class Jardinier {
         this.position = position;
     }
 
-    // Le jardinier peut maintenant utiliser 'this.plateau' si besoin pour des vérifications futures
+    public boolean accessibleEnUnCoupParJardinier(GameState gameState, Position positionAAcceder) {
+        List<Position> trajets = plateau.getTrajetsLigneDroite(this.getPosition());
+        return trajets.contains(positionAAcceder);
+    }
 }

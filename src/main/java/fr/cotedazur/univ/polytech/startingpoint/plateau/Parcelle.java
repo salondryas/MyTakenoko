@@ -1,6 +1,12 @@
 package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
+// --- 1. IMPORTS AJOUTÉS ---
 import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Amenagement;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Bassin; // <--- AJOUT
+import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Enclos; // <--- AJOUT
+import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Engrais;// <--- AJOUT
+import fr.cotedazur.univ.polytech.startingpoint.plateau.Arrangement; // <--- AJOUT
+
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Placable;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
@@ -48,9 +54,28 @@ public class Parcelle extends Placable {
         return couleur;
     }
 
+    public boolean arrangementValide(Arrangement arrangementRequis) {
+        // Si la carte demande "AUCUN", c'est valide par défaut
+        if (arrangementRequis == Arrangement.AUCUN || arrangementRequis == null) {
+            return true;
+        }
+
+        if (this.amenagementAcqui == null) {
+            return false;
+        }
+
+        return switch (arrangementRequis) {
+            case BASSIN -> this.amenagementAcqui instanceof Bassin;
+            case ENCLOS -> this.amenagementAcqui instanceof Enclos;
+            case ENGRAIS -> this.amenagementAcqui instanceof Engrais;
+            default -> false;
+        };
+    }
+
     @Override
     public String toString() {
-        if (position == null) return couleur.toString();
+        if (position == null)
+            return couleur.toString();
         return couleur + " : " + super.toString();
     }
 
@@ -61,9 +86,9 @@ public class Parcelle extends Placable {
     }
 
     public boolean pousserBambou() {
-        if (this.couleur == Couleur.AUCUNE) return false;
-
-        if (bambou != null && getNbSectionsSurParcelle() < 4) {
+        if (this.couleur == Couleur.AUCUNE)
+            return false;
+        if (bambou != null && getNbSectionsSurParcelle() < bambou.getHauteurMax() && irriguee) {
             bambou.croissance();
             return true;
         }
@@ -72,8 +97,10 @@ public class Parcelle extends Placable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (o == null || o.getClass() != this.getClass()) return false;
+        if (o == this)
+            return true;
+        if (o == null || o.getClass() != this.getClass())
+            return false;
         Parcelle parcelle = (Parcelle) o;
         return Objects.equals(this.getPosition(), parcelle.getPosition()) &&
                 this.getCouleur() == parcelle.getCouleur();
@@ -90,8 +117,7 @@ public class Parcelle extends Placable {
 
     public void triggerIrrigation() {
         if (!irriguee) {
-            irriguee = true;
-            bambou.faireApparaitre();
+            irriguee = bambou.faireApparaitre();
         }
     }
 

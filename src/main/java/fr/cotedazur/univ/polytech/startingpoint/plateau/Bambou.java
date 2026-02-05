@@ -1,18 +1,20 @@
 package fr.cotedazur.univ.polytech.startingpoint.plateau;
 
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.QuantityException;
 
 public class Bambou {
 
     private int number_of_sections; // hauteur section
+    private static final int maxHeight = 5; // hauteur max d'un bambou (socle + sections)
     private Couleur section_colour;
 
-    private int section_growth = 1; // dicte le nombre de combien de sections on fait pousser le bambou
+    private int section_growth; // dicte le nombre de combien de sections on fait pousser le bambou
 
     public Bambou(Couleur colour) {
         number_of_sections = 0; // MODIFIÉ : était 1, maintenant 0 (pas de bambou par défaut)
         section_colour = colour;
-        // number_of_bamboo -= 1;
+        section_growth = 1;
     }
 
     public int getNumberOfSections() {
@@ -24,12 +26,42 @@ public class Bambou {
     }
 
     public void croissance() {
-        if (number_of_sections <= 4 - section_growth)
+        if (number_of_sections <= maxHeight - section_growth) {
+            takeBambooSection(section_colour);
             number_of_sections += section_growth; // on agrandit le bambou i.e: on rajoute une section
+        }
+    }
+
+    private void takeBambooSection(Couleur section_colour) {
+        switch (section_colour) {
+            case ROSE:
+                try {
+                    StockSectionBambou.ROSES.subtractToQuantity();
+                } catch (QuantityException e) {
+                    e.getMessage();
+                }
+                break;
+
+            case VERT:
+                try {
+                    StockSectionBambou.VERTES.subtractToQuantity();
+                } catch (QuantityException e) {
+                    e.getMessage();
+                }
+                break;
+
+            default:
+                try {
+                    StockSectionBambou.JAUNES.subtractToQuantity();
+                } catch (QuantityException e) {
+                    e.getMessage();
+                }
+                break;
+        }
     }
 
     public void retirerSection() {
-        if (number_of_sections >= 1)
+        if (number_of_sections > 1)
             number_of_sections -= 1;
     }
 
@@ -48,5 +80,9 @@ public class Bambou {
 
     public void increaseSectionGrowth() {
         section_growth = 2;
+    }
+
+    public int getHauteurMax() {
+        return maxHeight;
     }
 }

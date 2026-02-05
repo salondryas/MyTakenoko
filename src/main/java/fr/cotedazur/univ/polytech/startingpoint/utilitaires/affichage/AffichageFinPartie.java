@@ -9,31 +9,39 @@ public class AffichageFinPartie implements Afficher {
                          RÉSULTATS FINAUX            \s
             ==========================================
            """;
-    GameState gameState;
+    private final GameState gameState;
 
     public AffichageFinPartie(GameState gameState) {
-        this.gameState=gameState;
+        this.gameState = gameState;
     }
 
+    @Override
     public String afficher() {
         StringBuilder sb = new StringBuilder();
 
-        // Afficher "Résultats finaux"
         sb.append(HEADER).append('\n');
 
-        // Afficher le Plateau
-        sb.append(gameState.getPlateau().toString()).append('\n');
+        // Délégation à l'afficheur de plateau
+        sb.append(new AfficherEtatPlateau(gameState.getPlateau()).afficher()).append('\n');
 
-        // Afficher les inventaires joueurs
+        // Afficher les joueurs
+        Bot gagnant = gameState.determinerMeilleurJoueur();
+
         for (Bot bot : gameState.getJoueurs()) {
-            sb.append(" JOUEUR : ").append(bot.getNom()).append('\n');
-            sb.append(bot.getInventaire().toString()); // Appel du nouveau toString()
+            sb.append(" JOUEUR : ").append(bot.getNom());
+            if (bot.equals(gagnant)) {
+                sb.append("  (GAGNANT)"); // Petit bonus visuel
+            }
+            sb.append('\n');
+            // Délégation à l'afficheur d'inventaire
+            sb.append(new AfficherInventaireJoueur(bot.getInventaire()).afficher());
         }
 
-        // Afficher le(s) gagnant(s)
-        Bot gagnant = gameState.determinerMeilleurJoueur();
-        int meilleurScore = gagnant.getScore();
-        sb.append(" LE GAGNANT EST : " + (gagnant != null ? gagnant.getNom() : "Personne") + " avec " + meilleurScore + " points !");
+        sb.append("\n LE GAGNANT EST : ")
+                .append(gagnant != null ? gagnant.getNom() : "Personne")
+                .append(" avec ")
+                .append(gagnant != null ? gagnant.getScore() : 0)
+                .append(" points !");
 
         return sb.toString();
     }

@@ -6,7 +6,9 @@ import fr.cotedazur.univ.polytech.startingpoint.objectifs.parcelle.CarteParcelle
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ObjectifParcelle extends Objectif {
 
@@ -31,6 +33,11 @@ public class ObjectifParcelle extends Objectif {
         // (Il faudra peut-être ajouter un getter getCouleur() dans CarteParcelle)
         // Pour l'instant, supposons que CarteParcelle gère une couleur principale.
         return Collections.emptyList(); // À adapter selon votre CarteParcelle
+    }
+
+    @Override
+    public Map<Couleur, Integer> getObjMap() { //Pas utilisé (à modifier plus tard)
+        return carte.getMap();
     }
 
     @Override

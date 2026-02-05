@@ -2,10 +2,11 @@ package fr.cotedazur.univ.polytech.startingpoint.actions;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.GrillePlateau;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
+import java.util.logging.Logger;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives;
 
@@ -33,7 +34,9 @@ public class DeplacerJardinier implements Action {
         List<Parcelle> parcellesAArroser = new ArrayList<>();
         Parcelle parcelleArrivee = plateau.getParcelle(destination);
 
-        if (parcelleArrivee != null) {
+        if (parcelleArrivee != null && !(parcelleArrivee == GrillePlateau.PARCELLE_ORIGINE)) { // on utilise == car il y a
+                                                                                             // une unique parcelle
+            // origine sur tout le plateau
             parcellesAArroser.add(parcelleArrivee);
 
             // CORRECTION : Appel de la méthode locale au lieu de plateau.getParcellesVoisinesMemeCouleur

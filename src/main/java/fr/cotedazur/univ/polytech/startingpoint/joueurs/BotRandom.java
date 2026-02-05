@@ -2,12 +2,12 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
-import fr.cotedazur.univ.polytech.startingpoint.actions.PoserParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 
 import java.util.List;
 import java.util.Random;
@@ -75,9 +75,12 @@ public class BotRandom extends Bot {
 
                         if (!jardinierVide || !pandaVide) {
                             TypeObjectif type;
-                            if (jardinierVide) type = TypeObjectif.PANDA;
-                            else if (pandaVide) type = TypeObjectif.JARDINIER;
-                            else type = random.nextBoolean() ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
+                            if (jardinierVide)
+                                type = TypeObjectif.PANDA;
+                            else if (pandaVide)
+                                type = TypeObjectif.JARDINIER;
+                            else
+                                type = random.nextBoolean() ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
 
                             return new PiocherObjectif(type);
                         }
@@ -94,5 +97,42 @@ public class BotRandom extends Bot {
             }
         }
         return null;
+    }
+
+    /// =================== METEO ===================
+    ///
+
+    // Implémentation pour la pluie
+    @Override
+    public Parcelle choisirParcelleMeteo(List<Parcelle> parcellesIrriguees) {
+        if (parcellesIrriguees.isEmpty()) {
+            return null;
+        }
+        // Choisit une parcelle aléatoire parmi les parcelles irriguées
+        return parcellesIrriguees.get(random.nextInt(parcellesIrriguees.size()));
+    }
+
+    // Implémentation pour l'orage
+    @Override
+    public Parcelle choisirDestinationPanda(List<Parcelle> parcelles) {
+        if (parcelles.isEmpty()) {
+            return null;
+        }
+        // Choisit une parcelle aléatoire pour placer le panda
+        return parcelles.get(random.nextInt(parcelles.size()));
+    }
+
+    // Implémentation pour le choix libre
+    @Override
+    public Meteo choisirMeteo() {
+        Meteo[] options = { Meteo.SOLEIL, Meteo.PLUIE, Meteo.VENT, Meteo.ORAGE, Meteo.NUAGES };
+        return options[random.nextInt(options.length)];
+    }
+
+    // Implémentation pour les nuages sans aménagement
+    @Override
+    public Meteo choisirMeteoAlternative() {
+        Meteo[] options = { Meteo.SOLEIL, Meteo.PLUIE, Meteo.VENT, Meteo.ORAGE };
+        return options[random.nextInt(options.length)];
     }
 }

@@ -5,7 +5,6 @@ import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 
 import java.util.Optional;
 
@@ -31,9 +30,6 @@ public class PiocherObjectif implements Action {
         if (objectifPioche.isPresent()) {
             Objectif obj = objectifPioche.get();
             bot.getInventaire().ajouterObjectif(obj);
-            Logger.print(bot.getNom() + " a pioché un objectif " + type);
-        } else {
-            Logger.print(bot.getNom() + " a voulu piocher " + type + " mais la pioche est vide !");
         }
     }
 

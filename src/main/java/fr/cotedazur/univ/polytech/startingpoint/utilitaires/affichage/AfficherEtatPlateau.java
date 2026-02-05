@@ -1,5 +1,6 @@
 package fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage;
 
+import fr.cotedazur.univ.polytech.startingpoint.plateau.GrillePlateau;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
@@ -33,7 +34,7 @@ public class AfficherEtatPlateau implements Afficher {
 
             // On ignore la parcelle origine (Etang) pour l'affichage si on veut,
             // ou on l'affiche différemment.
-            if (pos.equals(Plateau.POSITION_ORIGINE)) {
+            if (pos.equals(GrillePlateau.POSITION_ORIGINE)) {
                 sb.append(String.format(LINE_FORMAT,
                         pos.toString(), "ETANG", "OUI", "-"));
             } else {

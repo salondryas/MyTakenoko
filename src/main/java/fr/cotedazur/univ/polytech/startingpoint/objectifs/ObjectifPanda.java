@@ -2,7 +2,9 @@ package fr.cotedazur.univ.polytech.startingpoint.objectifs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.StockSectionBambou;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.QuantityException;
 
 import java.util.HashMap; // N'oublie pas cet import !
 import java.util.List;
@@ -13,7 +15,8 @@ public class ObjectifPanda extends Objectif {
     private final List<Couleur> couleurs;
 
     // Cette Map sert à stocker "2 VERTS" ou "1 VERT, 1 ROSE, 1 JAUNE"
-    // CORRECTION 1 : On initialise la HashMap tout de suite pour éviter le NullPointer
+    // CORRECTION 1 : On initialise la HashMap tout de suite pour éviter le
+    // NullPointer
     private final Map<Couleur, Integer> objPanda = new HashMap<>();
 
     // --- CONSTRUCTEUR 1 : Jeu ---
@@ -68,7 +71,8 @@ public class ObjectifPanda extends Objectif {
             Couleur couleur = entry.getKey();
             int quantite = entry.getValue();
 
-            for(int i=0; i < quantite; i++) {
+            for (int i = 0; i < quantite; i++) {
+                replaceBambooSection(couleur);
                 bot.getInventaire().retirerBambou(couleur);
             }
         }
@@ -76,9 +80,42 @@ public class ObjectifPanda extends Objectif {
         return true;
     }
 
+    private void replaceBambooSection(Couleur section_colour) { // pour une seule couleur
+        switch (section_colour) {
+            case ROSE:
+                try {
+                    StockSectionBambou.ROSES.addToQuantity();
+                } catch (QuantityException e) {
+                    e.getMessage();
+                }
+                break;
+
+            case VERT:
+                try {
+                    StockSectionBambou.VERTES.addToQuantity();
+                } catch (QuantityException e) {
+                    e.getMessage();
+                }
+                break;
+
+            default:
+                try {
+                    StockSectionBambou.JAUNES.addToQuantity();
+                } catch (QuantityException e) {
+                    e.getMessage();
+                }
+                break;
+        }
+    }
+
     @Override
     public List<Couleur> getCouleurs() {
         return this.couleurs;
+    }
+
+    @Override
+    public Map<Couleur, Integer> getObjMap() {
+        return objPanda;
     }
 
     @Override

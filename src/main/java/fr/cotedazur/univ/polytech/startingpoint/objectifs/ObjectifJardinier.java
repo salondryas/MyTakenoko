@@ -19,6 +19,8 @@ public class ObjectifJardinier extends Objectif {
     private final int tailleRequise;
     // NOUVEAU : On stocke l'arrangement requis
     private final Arrangement arrangementRequis;
+    //On stocke aussi le nombre de bambous requis
+    private int nombreRequis;
 
     // --- CONSTRUCTEUR 1 : Via l'Enum (Pour le Jeu) ---
     public ObjectifJardinier(CarteBambou carte) {
@@ -26,19 +28,21 @@ public class ObjectifJardinier extends Objectif {
         this.couleur = carte.getCouleur();
         this.tailleRequise = carte.getTaille();
         this.arrangementRequis = carte.getArrangement(); // On récupère l'info depuis la carte
+        this.nombreRequis = carte.getNombreDeBambous();
     }
 
     // --- CONSTRUCTEUR 2 : Manuel (Pour les Tests) ---
-    public ObjectifJardinier(Couleur couleur, int tailleRequise, int points, Arrangement arrangement) {
+    public ObjectifJardinier(Couleur couleur, int tailleRequise, int points, Arrangement arrangement, int nombreRequis) {
         super(points, TypeObjectif.JARDINIER);
         this.couleur = couleur;
         this.tailleRequise = tailleRequise;
         this.arrangementRequis = arrangement;
+        this.nombreRequis = nombreRequis ;
     }
 
     // Constructeur simplifié pour tests (sans arrangement spécifié -> AUCUN)
     public ObjectifJardinier(Couleur couleur, int tailleRequise, int points) {
-        this(couleur, tailleRequise, points, Arrangement.AUCUN);
+        this(couleur, tailleRequise, points, Arrangement.AUCUN, 1);
     }
 
     @Override
@@ -48,6 +52,10 @@ public class ObjectifJardinier extends Objectif {
 
     public int getTaille() {
         return tailleRequise;
+    }
+
+    public int getNombreRequis() {
+        return nombreRequis;
     }
 
     @Override
@@ -98,8 +106,18 @@ public class ObjectifJardinier extends Objectif {
     }
 
     @Override
+    public Map<Couleur, Integer> getObjMap() {
+        return Map.of(couleur, tailleRequise);
+    }
+
+
+    @Override
     public String toString() {
         String amenagementTxt = (arrangementRequis != Arrangement.AUCUN) ? " avec " + arrangementRequis : "";
         return "Objectif Jardinier : Bambou " + couleur + " de taille " + tailleRequise + amenagementTxt + " (" + getPoints() + "pts)";
+    }
+
+    public Arrangement getArrangementRequis() {
+        return arrangementRequis;
     }
 }

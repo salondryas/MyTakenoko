@@ -18,7 +18,7 @@ public class PoserCanalDirrigation implements Action {
     public void appliquer(GameState gameState, Bot joueur) {
         Plateau plateau = gameState.getPlateau();
 
-        // CORRECTION : On vérifie d'abord que le joueur a du stock !
+        // On vérifie d'abord que le joueur a du stock
         if (joueur.getInventaire().getNombreCanauxDisponibles() > 0) {
 
             // Ensuite on tente de le poser sur le plateau

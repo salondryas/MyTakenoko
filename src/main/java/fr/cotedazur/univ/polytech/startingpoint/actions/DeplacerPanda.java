@@ -18,6 +18,10 @@ public class DeplacerPanda implements Action {
         this.destination = destination;
     }
 
+    public Position getDestination() {
+        return destination;
+    }
+
     @Override
     public void appliquer(GameState gameState, Bot bot) {
         Plateau plateau = gameState.getPlateau();
@@ -29,13 +33,13 @@ public class DeplacerPanda implements Action {
         // 2. Manger le bambou
         Parcelle parcelle = plateau.getParcelle(destination);
 
-        // CORRECTION : On vérifie que la parcelle existe, n'est pas l'étang, et a du bambou
+        // CORRECTION : On vérifie que la parcelle existe, n'est pas l'étang, et a du
+        // bambou
         if (parcelle != null && parcelle.getCouleur() != Couleur.AUCUNE) {
 
-            // On tente de manger (supposons que Parcelle a une méthode retirerBambou ou similaire)
-            // Si vous n'avez pas de boolean de retour sur retirerSection(), on vérifie la taille avant
-            if (parcelle.getNbSectionsSurParcelle() > 0) {
-                parcelle.getBambou().retirerSection();
+            if (pandaJeu.mangerBambou(destination, plateau)) {
+                // parcelle.getBambou().retirerSection();
+                // redondant
 
                 // On ajoute à l'inventaire
                 bot.getInventaire().ajouterBambou(parcelle.getCouleur());

@@ -7,7 +7,9 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur.*;
 
@@ -41,6 +43,8 @@ public enum CarteParcelle {
             creationParcellesUniformes(Forme.MIXTE1,VERT),
             creationParcellesUniformes(Forme.MIXTE2,JAUNE)), 3 ),
     ;
+    //pour renvoyer une map contenant le nombre de parcelle et la couleur correspodante
+    private final Map<Couleur, Integer> map=new HashMap<Couleur, Integer>();
 
     // -- INSTANCES --
     private final Motif motif;
@@ -50,11 +54,17 @@ public enum CarteParcelle {
     CarteParcelle(List<Parcelle> parcellesRelatives, int points) {
         this.motif = new Motif(parcellesRelatives);
         this.points=points;
+        for (Parcelle p : parcellesRelatives) {
+            this.map.merge(p.getCouleur(), 1, Integer::sum);
+        }
     }
 
     // -- GETTER --
     public int getPoints() {
         return points;
+    }
+    public Map<Couleur, Integer> getMap() {
+        return map;
     }
 
     // -- VÉRIFICATEURS --

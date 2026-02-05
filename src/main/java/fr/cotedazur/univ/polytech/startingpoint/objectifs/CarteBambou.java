@@ -24,7 +24,7 @@ public enum CarteBambou {
 
     ROSE_DEUX_PAR_TROIS_SUR_VIDE(ROSE, 2, 3,AUCUN, 6),                 // Deux bambous roses de taille 3 sur n'importe quelle tuile
     JAUNE_TROIS_PAR_TROIS_SUR_VIDE(JAUNE, 3, 3,AUCUN, 7),              // Trois bambous jaunes de taille 3 sur n'importe quelle tuile
-    VERT_QUATRE_PAR_TROIS_SUR_VIDE(VERT, 3, 4,AUCUN, 8),               // Quatre bambous verts de taille 3 sur n'importe quelle tuile
+    VERT_QUATRE_PAR_TROIS_SUR_VIDE(VERT, 4, 3,AUCUN, 8),               // Quatre bambous verts de taille 3 sur n'importe quelle tuile
     ;
 
     Couleur couleur;

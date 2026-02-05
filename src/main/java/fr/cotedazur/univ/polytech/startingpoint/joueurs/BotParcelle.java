@@ -7,6 +7,7 @@ import fr.cotedazur.univ.polytech.startingpoint.actions.PoserParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.actions.TypeAction;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.GrillePlateau;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
@@ -14,9 +15,11 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives;
+import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -24,12 +27,15 @@ import java.util.Set;
  * Stratégie : "Simuler et Noter" (Exhaustive Search).
  */
 public class BotParcelle extends Bot {
+    private final Random random; // pour les choix de meteo
 
-    // Mémoire tampon pour stocker la décision prise lors de la phase "choisirParcelle"
+    // Mémoire tampon pour stocker la décision prise lors de la phase
+    // "choisirParcelle"
     private Position positionMemoriseePourLeTour = null;
 
     public BotParcelle(String nom) {
         super(nom);
+        this.random = new Random();
     }
 
     /**
@@ -90,7 +96,8 @@ public class BotParcelle extends Bot {
 
         // 3. Mémorisation pour l'étape suivante
         this.positionMemoriseePourLeTour = meilleurPos;
-        Logger.print(getNom() + " a calculé le meilleur coup : " + meilleurTuile.getCouleur() + " en " + meilleurPos + " (Score: " + meilleurScore + ")");
+        Logger.print(getNom() + " a calculé le meilleur coup : " + meilleurTuile.getCouleur() + " en " + meilleurPos
+                + " (Score: " + meilleurScore + ")");
 
         // Validation du choix dans le moteur de jeu
         selection.validerChoix(meilleurTuile);
@@ -127,7 +134,8 @@ public class BotParcelle extends Bot {
             if (obj.getType() == TypeObjectif.PARCELLE && obj.getCouleurs().contains(couleurTuile)) {
                 score += 20;
                 couleurUtile = true;
-                // Si la tuile complète potentiellement un motif (heuristic simple: on en a besoin), on booste
+                // Si la tuile complète potentiellement un motif (heuristic simple: on en a
+                // besoin), on booste
             }
         }
 
@@ -137,10 +145,12 @@ public class BotParcelle extends Bot {
         }
 
         // Critère 2 : Adjacence Utile / Regroupement (Poids MOYEN : 10 pts par voisin)
-        // On regarde les voisins directs. Créer des zones unicolores est la clé des motifs.
+        // On regarde les voisins directs. Créer des zones unicolores est la clé des
+        // motifs.
         int voisinsMemeCouleur = 0;
         for (PositionsRelatives dir : PositionsRelatives.values()) {
-            if (dir == PositionsRelatives.ZERO) continue;
+            if (dir == PositionsRelatives.ZERO)
+                continue;
 
             Position voisinPos = pos.add(dir.getPosition());
             Parcelle voisin = plateau.getParcelle(voisinPos);
@@ -153,7 +163,7 @@ public class BotParcelle extends Bot {
 
         // Critère 3 : Irrigation (Poids VARIABLE : 15 pts)
         // Une parcelle irriguée vaut plus cher car elle valide les objectifs
-        boolean accesEau = pos.estAdjacent(Plateau.POSITION_ORIGINE) || aCanalAdjacent(plateau, pos);
+        boolean accesEau = pos.estAdjacent(GrillePlateau.POSITION_ORIGINE) || aCanalAdjacent(plateau, pos);
         if (accesEau) {
             score += 15;
         } else {
@@ -183,8 +193,47 @@ public class BotParcelle extends Bot {
 
     private boolean aCanalAdjacent(Plateau plateau, Position pos) {
         // On vérifie si un canal touche cette position (simulation simplifiée)
-        // Dans l'idéal, on utiliserait plateau.peutPlacerCanal ou verification des arêtes
-        // Ici on suppose que si on est collé à une position irriguée, c'est bon signe (heuristique)
+        // Dans l'idéal, on utiliserait plateau.peutPlacerCanal ou verification des
+        // arêtes
+        // Ici on suppose que si on est collé à une position irriguée, c'est bon signe
+        // (heuristique)
         return false; // À améliorer avec l'accès aux canaux du plateau si nécessaire
+    }
+
+    /// =================== METEO ===================
+    ///
+
+    // Implémentation pour la pluie
+    @Override
+    public Parcelle choisirParcelleMeteo(List<Parcelle> parcellesIrriguees) {
+        if (parcellesIrriguees.isEmpty()) {
+            return null;
+        }
+        // Choisit une parcelle aléatoire parmi les parcelles irriguées
+        return parcellesIrriguees.get(random.nextInt(parcellesIrriguees.size()));
+    }
+
+    // Implémentation pour l'orage
+    @Override
+    public Parcelle choisirDestinationPanda(List<Parcelle> parcelles) {
+        if (parcelles.isEmpty()) {
+            return null;
+        }
+        // Choisit une parcelle aléatoire pour placer le panda
+        return parcelles.get(random.nextInt(parcelles.size()));
+    }
+
+    // Implémentation pour le choix libre
+    @Override
+    public Meteo choisirMeteo() {
+        Meteo[] options = { Meteo.SOLEIL, Meteo.PLUIE, Meteo.VENT, Meteo.ORAGE, Meteo.NUAGES };
+        return options[random.nextInt(options.length)];
+    }
+
+    // Implémentation pour les nuages sans aménagement
+    @Override
+    public Meteo choisirMeteoAlternative() {
+        Meteo[] options = { Meteo.SOLEIL, Meteo.PLUIE, Meteo.VENT, Meteo.ORAGE };
+        return options[random.nextInt(options.length)];
     }
 }

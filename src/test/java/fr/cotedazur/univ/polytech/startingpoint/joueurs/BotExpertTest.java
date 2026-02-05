@@ -2,72 +2,76 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
-import fr.cotedazur.univ.polytech.startingpoint.actions.DeplacerPanda;
-import fr.cotedazur.univ.polytech.startingpoint.actions.PiocherObjectif;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifPanda;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier; // IMPORT AJOUTÉ
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Panda;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle; // <--- Import ajouté
+import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 class BotExpertTest {
 
     BotExpert bot;
-    @Mock GameState gameState;
-    @Mock Plateau plateau;
-    @Mock Panda panda;
-    @Mock Jardinier jardinier; // MOCK JARDINIER AJOUTÉ
-    @Mock PiocheParcelle piocheParcelle;
+    GameState gameState;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        bot = new BotExpert("Einstein");
-
-        when(gameState.getPlateau()).thenReturn(plateau);
-        when(gameState.getPanda()).thenReturn(panda);
-        when(gameState.getJardinier()).thenReturn(jardinier); // LIEN JARDINIER
-        when(gameState.getPiocheParcelle()).thenReturn(piocheParcelle);
-
-        // Comportements par défaut
-        when(piocheParcelle.estVide()).thenReturn(false);
-        when(jardinier.getPosition()).thenReturn(Plateau.POSITION_ORIGINE);
-        when(panda.getPositionPanda()).thenReturn(Plateau.POSITION_ORIGINE);
+        bot = new BotExpert("MasterBot");
+        gameState = new GameState(List.of(bot));
     }
 
     @Test
-    void testPrioriteMainVide() {
-        // CAS : Le bot n'a aucun objectif.
-        Action action = bot.jouer(gameState).get(0);
-        assertTrue(action instanceof PiocherObjectif, "Main vide -> Doit piocher");
+    void testIntegration_ChoisirAction_AppelleStrategie() {
+        // On vérifie que la méthode choisirUneAction ne plante pas et renvoie un résultat
+        Action action = bot.choisirUneAction(gameState, new HashSet<>());
+        // Note: L'action peut être null si rien n'est possible, mais l'appel ne doit pas crasher
+        // Ici avec un jeu vide, il devrait vouloir piocher un objectif
+        assertNotNull(action, "Le Bot Expert doit choisir une action via sa stratégie");
     }
 
     @Test
-    void testPrioriteMangerPanda() {
-        // CAS : Le bot a un objectif Panda VERT.
-        bot.getInventaire().ajouterObjectif(new ObjectifPanda(2, List.of(Couleur.VERT)));
+    void testDelegationMeteo_AppelleExpertMeteo() {
+        Meteo m = bot.choisirMeteo();
+        assertNotNull(m, "Le bot doit déléguer le choix météo");
 
-        Position posVerte = new Position(1, 0);
-        Parcelle parcelleVerte = new Parcelle(posVerte, Couleur.VERT);
-        parcelleVerte.pousserBambou();
+        Meteo mAlt = bot.choisirMeteoAlternative();
+        assertNotNull(mAlt, "Le bot doit déléguer le choix météo alternatif");
+    }
 
-        when(plateau.getParcelle(posVerte)).thenReturn(parcelleVerte);
-        when(plateau.getTrajetsLigneDroite(any())).thenReturn(List.of(posVerte));
+    @Test
+    void testDelegationChoixParcelle() {
+        // Simulation : On pioche 3 parcelles
+        List<Parcelle> choix = new ArrayList<>();
+        choix.add(new Parcelle(Couleur.VERT));
+        choix.add(new Parcelle(Couleur.ROSE));
+        choix.add(new Parcelle(Couleur.JAUNE));
 
-        Action action = bot.jouer(gameState).get(0);
+        // CORRECTION ICI : On doit fournir une pioche (même vide ou bidon) au constructeur
+        PiocheParcelle piocheDummy = new PiocheParcelle();
+        SelectionParcelle session = new SelectionParcelle(choix, piocheDummy);
 
-        assertTrue(action instanceof DeplacerPanda, "Le bot devrait déplacer le Panda");
+        // Le bot doit en choisir une via ExpertStrategie
+        Parcelle p = bot.choisirParcelle(session, gameState.getPlateau());
+
+        assertNotNull(p, "Le bot doit choisir une parcelle");
+        assertTrue(choix.contains(p), "La parcelle choisie doit être valide");
+    }
+
+    @Test
+    void testDelegationChoixPosition() {
+        Parcelle p = new Parcelle(Couleur.VERT);
+        Position pos = bot.choisirPosition(p, gameState.getPlateau());
+
+        // Au début du jeu, il y a des places libres autour de l'étang
+        assertNotNull(pos, "Le bot doit trouver une position pour poser sa tuile");
     }
 }

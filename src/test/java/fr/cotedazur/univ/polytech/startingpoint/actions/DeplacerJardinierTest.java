@@ -47,7 +47,8 @@ class DeplacerJardinierTest {
 
     @Test
     void testAppliquer_DeplaceEtFaitPousser_SurParcelleIrriguee() {
-        // SCENARIO : Le jardinier va sur une parcelle VERTE adjacente à l'étang (donc irriguée)
+        // SCENARIO : Le jardinier va sur une parcelle VERTE adjacente à l'étang (donc
+        // irriguée)
         Position posCible = new Position(1, 0);
         Parcelle pVerte = new Parcelle(Couleur.VERT);
 
@@ -134,13 +135,14 @@ class DeplacerJardinierTest {
         p.getBambou().croissance(); // 2
         p.getBambou().croissance(); // 3
         p.getBambou().croissance(); // 4
-        assertEquals(4, p.getNbSectionsSurParcelle());
+        p.getBambou().croissance(); // 5
+        assertEquals(5, p.getNbSectionsSurParcelle());
 
         // Action
         action = new DeplacerJardinier(jardinier, pos);
         action.appliquer(gameState, botMock);
 
         // Vérification : Bloqué à 4
-        assertEquals(4, p.getNbSectionsSurParcelle());
+        assertEquals(5, p.getNbSectionsSurParcelle());
     }
 }

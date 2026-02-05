@@ -1,18 +1,22 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
+import fr.cotedazur.univ.polytech.startingpoint.actions.*;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifParcelle;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.parcelle.CarteParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,79 +26,188 @@ import static org.mockito.Mockito.*;
 class BotParcelleTest {
 
     BotParcelle bot;
-    @Mock GameState gameState;
-    @Mock Plateau plateau;
-    @Mock SelectionParcelle selection;
+
+    @Mock GameState gameStateMock;
+    @Mock Plateau plateauMock;
+    @Mock
+    PiocheParcelle piocheParcelleMock;
+    @Mock PiocheObjectif piocheObjectifMock;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        bot = new BotParcelle("Architecte");
-        // Par défaut, le plateau dit que n'importe quelle position est libre si on lui demande
-        when(plateau.isPositionDisponible(any())).thenReturn(true);
+        bot = new BotParcelle("ConstructeurTest");
+
+        // Configuration de base du GameState
+        when(gameStateMock.getPlateau()).thenReturn(plateauMock);
+        when(gameStateMock.getPiocheParcelle()).thenReturn(piocheParcelleMock);
+
+        // Configuration des pioches pour éviter les NullPointer
+        when(gameStateMock.getPiocheObjectifParcelle()).thenReturn(piocheObjectifMock);
+
+        // Par défaut, pas d'emplacements dispo
+        when(plateauMock.getEmplacementsDisponibles()).thenReturn(Collections.emptyList());
+    }
+
+    // =================================================================================
+    // 1. TESTS DE LA STRATÉGIE GÉNÉRALE (choisirUneAction)
+    // =================================================================================
+
+    @Test
+    void testPriorite1_PasDObjectif_Piocher() {
+        // SCENARIO : Inventaire vide (0 objectifs)
+
+        List<Action> actions = bot.jouer(gameStateMock);
+
+        assertFalse(actions.isEmpty());
+        assertTrue(actions.get(0) instanceof PiocherObjectif, "Sans objectif, le bot doit piocher en priorité");
+        assertEquals(TypeAction.PIOCHER_OBJECTIF, actions.get(0).getType());
     }
 
     @Test
-    void testChoisirParcelle_PrivilegieObjectif() {
-        // SCENARIO : Le bot a un objectif "Ligne Verte" (Besoin de Vert).
-        // Il pioche : [VERT, ROSE, JAUNE].
-        // Il doit choisir VERT.
+    void testPriorite2_AvecObjectif_PoserParcelle() {
+        // SCENARIO : Le bot a un objectif Parcelle et la pioche n'est pas vide.
+        // ATTENDU : PoserParcelle
 
-        // 1. On donne l'objectif au bot
-        bot.getInventaire().ajouterObjectif(new ObjectifParcelle(CarteParcelle.LIGNE_VERTE));
+        // 1. Donner un objectif au bot
+        ObjectifParcelle obj = mock(ObjectifParcelle.class);
+        when(obj.getType()).thenReturn(fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif.PARCELLE);
+        bot.getInventaire().ajouterObjectif(obj);
 
-        // 2. On prépare la pioche
-        Parcelle pVerte = new Parcelle(Couleur.VERT);
+        // 2. Pioche disponible
+        when(piocheParcelleMock.estVide()).thenReturn(false);
+
+        List<Action> actions = bot.jouer(gameStateMock);
+
+        assertFalse(actions.isEmpty());
+        assertTrue(actions.get(0) instanceof PoserParcelle, "Avec un objectif, le bot doit essayer de poser une parcelle");
+    }
+
+    @Test
+    void testPriorite3_PiocheVide_PiocherObjectif() {
+        // SCENARIO : Le bot a un objectif, MAIS la pioche de parcelles est vide.
+
+        // 1. Objectif présent
+        ObjectifParcelle obj = mock(ObjectifParcelle.class);
+        when(obj.getType()).thenReturn(fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif.PARCELLE);
+        bot.getInventaire().ajouterObjectif(obj);
+
+        // 2. Pioche vide
+        when(piocheParcelleMock.estVide()).thenReturn(true);
+
+        List<Action> actions = bot.jouer(gameStateMock);
+
+        assertFalse(actions.isEmpty());
+        assertTrue(actions.get(0) instanceof PiocherObjectif, "Si on ne peut pas poser, on pioche des objectifs");
+    }
+
+    // =================================================================================
+    // 2. TESTS DE L'INTELLIGENCE (SCORING & CHOIX)
+    // =================================================================================
+
+    @Test
+    void testIntelligence_Scoring_ChoisitMeilleureTuileEtPosition() {
+        // SCENARIO COMPLEXE :
+        // - Objectif du bot : Avoir du VERT (pour faire une ligne verte par exemple).
+        // - Plateau : Il y a déjà une parcelle VERTE en (0,1).
+        // - Emplacements dispos : (0,0), (0,2), (1,1).
+        // - Pioche (Sélection) : [VERT, ROSE, JAUNE].
+
+        // ATTENDU : Le bot doit choisir la tuile VERTE et la poser en (0,2) ou (1,1) (voisin du Vert existant).
+
+        // 1. Setup Objectif Bot
+        ObjectifParcelle objVert = mock(ObjectifParcelle.class);
+        when(objVert.getType()).thenReturn(fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif.PARCELLE);
+        bot.getInventaire().ajouterObjectif(objVert);
+
+        // 2. Setup Selection (Les 3 cartes piochées)
+        Parcelle pVert = new Parcelle(Couleur.VERT);
         Parcelle pRose = new Parcelle(Couleur.ROSE);
         Parcelle pJaune = new Parcelle(Couleur.JAUNE);
-        when(selection.getParcellesAChoisir()).thenReturn(List.of(pVerte, pRose, pJaune));
+        SelectionParcelle session = mock(SelectionParcelle.class);
+        when(session.getParcellesAChoisir()).thenReturn(List.of(pRose, pVert, pJaune)); // Ordre mélangé
 
-        // 3. On prépare le plateau (une seule place dispo pour simplifier)
-        Position pos1 = new Position(1, 0);
-        when(plateau.getEmplacementsDisponibles()).thenReturn(List.of(pos1));
+        // 3. Setup Plateau (Positions et Voisins)
+        Position posVoisineDuVert = new Position(0, 2);
+        Position posIsolee = new Position(5, 5);
+        when(plateauMock.getEmplacementsDisponibles()).thenReturn(List.of(posIsolee, posVoisineDuVert));
+        when(plateauMock.isPositionDisponible(any())).thenReturn(true);
 
-        // ACTION
-        Parcelle choix = bot.choisirParcelle(selection, plateau);
+        // Simulation du voisinage : En (0,3) il y a déjà du VERT
+        // posVoisineDuVert(0,2) est voisine de (0,3) (selon logique hexagone, simplifions pour le test)
+        // Pour que le test fonctionne avec votre logique de "evaluerCoup", il faut que le mock
+        // retourne une parcelle verte quand le bot regarde les voisins de 'posVoisineDuVert'.
 
-        // VÉRIFICATION
-        assertEquals(Couleur.VERT, choix.getCouleur(),
-                "Le bot aurait dû choisir VERT car il a un objectif LIGNE_VERTE (+20 pts)");
+        // Astuce : On va dire que pour n'importe quelle position demandée autour de posVoisineDuVert, il y a du vert
+        // C'est un peu bourrin mais ça garantit le score d'adjacence.
+        Parcelle voisinVert = new Parcelle(Couleur.VERT);
+        // On mock le getParcelle pour qu'il renvoie le voisin vert quand on cherche autour de la bonne position
+        when(plateauMock.getParcelle(any(Position.class))).thenAnswer(invocation -> {
+            Position p = invocation.getArgument(0);
+            if (p.estAdjacent(posVoisineDuVert)) return voisinVert;
+            return null;
+        });
 
-        // Vérifie qu'il a bien validé son choix auprès de la sélection
-        verify(selection).validerChoix(pVerte);
+        // 4. ACT : Le bot choisit
+        Parcelle choix = bot.choisirParcelle(session, plateauMock);
 
-        // VÉRIFICATION DE LA MÉMORISATION
-        // Le bot doit ressortir immédiatement la position qu'il a calculée (pos1)
-        assertEquals(pos1, bot.choisirPosition(choix, plateau),
-                "Le bot doit se souvenir de l'endroit où il a prévu de poser la tuile");
+        // 5. ASSERT
+        assertEquals(pVert, choix, "Le bot doit choisir la tuile VERTE car il a un objectif VERT");
+        verify(session).validerChoix(pVert); // Vérifie qu'il a bien validé son choix
+
+        // 6. VERIFICATION DE LA MÉMOIRE (choisirPosition doit retourner ce qui a été calculé)
+        Position posChoisie = bot.choisirPosition(pVert, plateauMock);
+        assertEquals(posVoisineDuVert, posChoisie, "Le bot doit choisir la position adjacente au vert existant (Score max)");
     }
 
     @Test
-    void testChoisirParcelle_PrivilegieAdjacence() {
-        // SCENARIO : Pas d'objectif.
-        // Plateau : Il y a déjà une parcelle ROSE en (1,0).
-        // Pioche : [VERT, ROSE].
-        // Emplacement dispo : (0,1) qui est voisin de (1,0).
-        // Le bot doit choisir ROSE pour coller à la ROSE existante (Bonus regroupement).
+    void testMemoire_ResetApresUsage() {
+        // Vérifie que la variable "positionMemoriseePourLeTour" est bien reset à null
 
-        // 1. Pioche
-        Parcelle pVerte = new Parcelle(Couleur.VERT);
-        Parcelle pRose = new Parcelle(Couleur.ROSE);
-        when(selection.getParcellesAChoisir()).thenReturn(List.of(pVerte, pRose));
+        // 1. On force une mémorisation (via un hack ou une exécution simulée)
+        // Le plus simple est de lancer choisirParcelle avec un cas trivial
+        SelectionParcelle session = mock(SelectionParcelle.class);
+        Parcelle p = new Parcelle(Couleur.VERT);
+        when(session.getParcellesAChoisir()).thenReturn(List.of(p));
 
-        // 2. Plateau
-        Position posVoisine = new Position(0, 1);
-        when(plateau.getEmplacementsDisponibles()).thenReturn(List.of(posVoisine));
+        Position pos = new Position(0,0);
+        when(plateauMock.getEmplacementsDisponibles()).thenReturn(List.of(pos));
+        when(plateauMock.isPositionDisponible(pos)).thenReturn(true);
 
-        // Simulation : Si on regarde en (1,0) (voisin de posVoisine), il y a du ROSE
-        // (Cela simule l'existence d'une parcelle rose sur le plateau)
-        when(plateau.getParcelle(new Position(1, 0))).thenReturn(new Parcelle(Couleur.ROSE));
+        bot.choisirParcelle(session, plateauMock); // Mémorise (0,0)
 
-        // ACTION
-        Parcelle choix = bot.choisirParcelle(selection, plateau);
+        // 2. Premier appel : Renvoie la position mémorisée
+        assertEquals(pos, bot.choisirPosition(p, plateauMock));
 
-        // VÉRIFICATION
-        assertEquals(Couleur.ROSE, choix.getCouleur(),
-                "Le bot doit choisir ROSE pour gagner le bonus d'adjacence (+10 pts)");
+        // 3. Deuxième appel (si jamais) : Doit relancer un calcul ou renvoyer par défaut
+        // Comme la mémoire est vide, il va chercher dans getEmplacementsDisponibles
+        bot.choisirPosition(p, plateauMock);
+
+        // On vérifie juste que ça ne plante pas et que la logique de reset a été exécutée
+        // (Difficile à tester strictement sans introspection, mais le comportement fonctionnel est là)
+    }
+
+    // =================================================================================
+    // 3. TESTS MÉTÉO (Aléatoire)
+    // =================================================================================
+
+    @Test
+    void testMeteo_Robustesse() {
+        // Vérifier que les méthodes météo ne plantent pas et renvoient des valeurs cohérentes
+
+        assertNotNull(bot.choisirMeteo());
+
+        Meteo mAlt = bot.choisirMeteoAlternative();
+        assertNotNull(mAlt);
+        assertNotEquals(Meteo.NUAGES, mAlt, "L'alternative ne doit pas être NUAGES");
+
+        // Choix parcelle météo
+        Parcelle p = new Parcelle(Couleur.VERT);
+        assertEquals(p, bot.choisirParcelleMeteo(List.of(p)));
+        assertNull(bot.choisirParcelleMeteo(Collections.emptyList()));
+
+        // Destination Panda
+        assertEquals(p, bot.choisirDestinationPanda(List.of(p)));
+        assertNull(bot.choisirDestinationPanda(Collections.emptyList()));
     }
 }

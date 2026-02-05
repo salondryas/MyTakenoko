@@ -49,7 +49,7 @@ class ObjectifJardinierTest {
     @Test
     void validerObjectifJardinierAvecBassin() {
         // NOUVEAU TEST : Objectif Bambou VERT taille 4 AVEC BASSIN
-        ObjectifJardinier objBassin = new ObjectifJardinier(Couleur.VERT, 4, 6, Arrangement.BASSIN);
+        ObjectifJardinier objBassin = new ObjectifJardinier(Couleur.VERT, 4, 6, Arrangement.BASSIN, 1);
 
         Position pos = new Position(1, 0); // Adjacent Étang
         Parcelle parcelle = new Parcelle(pos, Couleur.VERT);

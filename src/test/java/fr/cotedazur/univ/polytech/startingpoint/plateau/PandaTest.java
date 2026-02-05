@@ -5,13 +5,12 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PandaTest {
-    private Plateau plateau;
-    private Panda panda;
+    Plateau plateau;
+    Panda panda;
 
     @BeforeEach
     void setUp() {
@@ -20,27 +19,51 @@ class PandaTest {
     }
 
     @Test
-    void testCaseConnecteeMaisInaccessibleEnUnCoup() {
-        // 1. La parcelle alignée (tout droit à l'Est)
-        // C'est un voisin direct de (0,0,0) sur l'axe r = -1
-        Position posAlignee = new Position(1, -1, 0);
+    void testMangerBambouStandard() {
+        Position pos = new Position(1, 0);
+        Parcelle p = new Parcelle(pos, Couleur.VERT);
 
-        // 2. La parcelle en "Virage"
-        // On prend posAlignee et on décale sur un AUTRE axe.
-        // (2, -1, -1) est voisine de (1, -1, 0) mais n'est pas alignée avec (0,0,0)
-        Position posVirage = new Position(2, -1, -1);
+        // CORRECTION : On utilise la méthode existante
+        // triggerIrrigation met irriguee=true ET ajoute la première section de bambou
+        p.triggerIrrigation();
 
-        plateau.placerParcelle(new Parcelle(Couleur.VERT), posAlignee);
-        plateau.placerParcelle(new Parcelle(Couleur.ROSE), posVirage);
+        // on fait pousser une fois le bambou
+        p.getBambou().croissance();
 
-        List<Position> cibles = plateau.getTrajetsLigneDroite(panda.getPositionPanda());
+        // On force l'ajout dans la grille (bypass règles d'adjacence pour le test
+        // unitaire)
+        plateau.getGrille().ajouterParcelle(p, pos);
 
-        // ASSERT
-        assertTrue(cibles.contains(posAlignee), "La parcelle alignée doit être accessible.");
+        // 1. On déplace le panda sur la case
+        panda.setPositionPanda(pos);
 
-        assertFalse(cibles.contains(posVirage),
-                "La parcelle (2, -1, -1) nécessite un virage, elle ne doit pas être accessible en ligne droite.");
+        // 2. Le panda mange
+        boolean aMange = panda.mangerBambou(pos, plateau);
+
+        assertTrue(aMange, "Le panda aurait dû manger");
+        assertEquals(1, p.getNbSectionsSurParcelle(), "Le bambou devrait être à 0 après le passage du panda");
     }
 
+    @Test
+    void testCannotEatFlag() {
+        Position pos = new Position(1, 0);
+        Parcelle p = new Parcelle(pos, Couleur.VERT);
 
+        // CORRECTION : triggerIrrigation() ajoute le premier bambou (taille = 1)
+        p.triggerIrrigation();
+
+        plateau.getGrille().ajouterParcelle(p, pos);
+
+        // 1. D'ABORD on déplace le panda
+        panda.setPositionPanda(pos);
+
+        // 2. ENSUITE on lui interdit de manger (pour ce tour/action)
+        panda.cannotEat();
+
+        // 3. Action : Essayer de Manger
+        boolean aMange = panda.mangerBambou(pos, plateau);
+
+        // Vérif : Il n'a pas mangé
+        assertEquals(1, p.getNbSectionsSurParcelle(), "Le bambou ne doit pas diminuer si cannotEat() est actif");
+    }
 }

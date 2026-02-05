@@ -55,7 +55,7 @@ class BotPandaTest {
         lenient().when(gameStateMock.getPlateau()).thenReturn(plateauMock);
         lenient().when(gameStateMock.getJardinier()).thenReturn(jardinierMock);
         lenient().when(gameStateMock.getPanda()).thenReturn(pandaMock);
-        lenient().when(gameStateMock.getPioche()).thenReturn(piocheParcelleMock);
+        lenient().when(gameStateMock.getPiocheParcelle()).thenReturn(piocheParcelleMock);
         lenient().when(gameStateMock.getPiochePanda()).thenReturn(piocheObjectifMock);
         lenient().when(piocheObjectifMock.getTaille()).thenReturn(10);
 

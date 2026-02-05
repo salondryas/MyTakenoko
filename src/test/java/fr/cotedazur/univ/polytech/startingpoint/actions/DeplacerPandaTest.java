@@ -2,11 +2,10 @@ package fr.cotedazur.univ.polytech.startingpoint.actions;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Panda;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Panda;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.mockito.Mockito.*;
 

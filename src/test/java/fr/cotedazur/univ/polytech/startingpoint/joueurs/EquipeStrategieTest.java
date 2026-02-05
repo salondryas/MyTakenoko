@@ -2,14 +2,9 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
-import fr.cotedazur.univ.polytech.startingpoint.actions.TypeAction;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 

@@ -2,9 +2,9 @@ package fr.cotedazur.univ.polytech.startingpoint.actions;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Jardinier;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,10 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 class DeplacerJardinierTest {
 

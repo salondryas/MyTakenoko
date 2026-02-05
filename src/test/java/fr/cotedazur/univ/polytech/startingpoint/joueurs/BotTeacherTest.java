@@ -1,59 +1,51 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
-import fr.cotedazur.univ.polytech.startingpoint.Strategies.StrategieJardinierUnCoup;
-import fr.cotedazur.univ.polytech.startingpoint.Strategies.StrategiePandaUnCoup;
-import fr.cotedazur.univ.polytech.startingpoint.Strategies.StrategieSabotage;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
+import fr.cotedazur.univ.polytech.startingpoint.joueurs.Strategies.*;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.*;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.jardinier.ObjectifJardinier;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.panda.ObjectifPanda;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-
 class BotTeacherTest {
-
 
     BotTeacher bot;
 
-
-    // Mocks du Moteur de Jeu
-    @Mock
-    GameState gameState;
+    // --- Mocks du Moteur de Jeu ---
+    @Mock GameState gameState;
     @Mock Plateau plateau;
     @Mock PiocheObjectif piochePanda;
     @Mock PiocheObjectif piocheJardinier;
     @Mock PiocheObjectif piocheObjParcelle;
     @Mock PiocheParcelle piocheParcelle;
 
-
-    // Mocks des Stratégies (On va les injecter à la place des vraies)
-    @Mock StrategieSabotage strategieSabotageMock;
-    @Mock StrategiePandaUnCoup strategiePandaMock;
-    @Mock StrategieJardinierUnCoup strategieJardinierMock;
-
+    // --- Mocks des Stratégies (On remplace les vraies par des simulacres) ---
+    @Mock StrategieSabotage sabotageMock;
+    @Mock StrategiePandaUnCoup pandaUnCoupMock;
+    @Mock StrategieJardinierUnCoup jardinierUnCoupMock;
+    @Mock StrategiePandaGenerale pandaGeneraleMock;
+    @Mock StrategieAleatoire aleatoireMock;
 
     @BeforeEach
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
-        bot = new BotTeacher("Professeur");
-
+        bot = new BotTeacher("Prof");
 
         // Configuration par défaut du GameState
         when(gameState.getPlateau()).thenReturn(plateau);
@@ -62,172 +54,150 @@ class BotTeacherTest {
         when(gameState.getPiocheObjectifParcelle()).thenReturn(piocheObjParcelle);
         when(gameState.getPiocheParcelle()).thenReturn(piocheParcelle);
 
-
-        // --- INJECTION MAGIQUE (RÉFLEXION) ---
-        // On remplace les stratégies créées avec "new" par nos Mocks
-        injecterMock(bot, "strategieSabotage", strategieSabotageMock);
-        injecterMock(bot, "strategiePanda", strategiePandaMock);
-        // ATTENTION : Vérifie que ta variable s'appelle bien "strategieJardinier" dans BotTeacher !
-        injecterMock(bot, "strategieJardinier", strategieJardinierMock);
+        // --- INJECTION DES MOCKS (Reflection) ---
+        // On remplace les "new Strategie...()" du Bot par nos Mocks pour contrôler le test
+        injecterMock(bot, "strategieSabotage", sabotageMock);
+        injecterMock(bot, "strategiePanda", pandaUnCoupMock);
+        injecterMock(bot, "strategieJardinier", jardinierUnCoupMock);
+        injecterMock(bot, "strategiePandaGenerale", pandaGeneraleMock);
+        injecterMock(bot, "strategieAleatoire", aleatoireMock);
     }
-
 
     /**
-     * Outil pour injecter un mock dans un attribut privé sans setter.
+     * Méthode utilitaire pour injecter des mocks dans les champs privés
      */
-    private void injecterMock(Object target, String fieldName, Object mock) {
-        try {
-            Field field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(target, mock);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            // Si tu n'as pas encore créé le champ strategieJardinier, cela affichera juste un warning ici
-            System.err.println("Impossible d'injecter le mock pour : " + fieldName + " (Le champ existe-t-il ?)");
-        }
+    private void injecterMock(Object target, String fieldName, Object mock) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, mock);
     }
 
-
-    private void forcerFinPremierTour() {
-        try {
-            Field field = BotTeacher.class.getDeclaredField("estPremierTour");
-            field.setAccessible(true);
-            field.set(bot, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void forcerFinPremierTour() throws Exception {
+        Field field = BotTeacher.class.getDeclaredField("estPremierTour");
+        field.setAccessible(true);
+        field.set(bot, false);
     }
 
-
-    private void remplirMainDuBot() {
-        for (int i = 0; i < 5; i++) {
-            // On ajoute des objectifs vides juste pour remplir le quota de 5 cartes
-            bot.getInventaire().ajouterObjectif(new ObjectifPanda(0, List.of()));
-        }
-    }
-
-
-    // ================= TESTS =================
-
+    // ================= TESTS DES PRIORITÉS =================
 
     @Test
-    void testPremierTour_DoitPiocher() {
+    void testPriorite0_PremierTour() {
+        // Au tout début, estPremierTour est true par défaut
         when(piochePanda.getTaille()).thenReturn(5);
-
 
         Action action = bot.choisirUneAction(gameState, Collections.emptySet());
 
-
-        assertInstanceOf(PiocherObjectif.class, action);
+        assertInstanceOf(PiocherObjectif.class, action, "Au premier tour, il doit piocher.");
+        // On vérifie qu'aucune stratégie n'a été appelée inutilement
+        verifyNoInteractions(sabotageMock);
     }
 
-
     @Test
-    void testPriorite1_Sabotage() {
+    void testPriorite1_Sabotage() throws Exception {
         forcerFinPremierTour();
 
+        // SCÉNARIO : Le sabotage trouve une action
+        DeplacerPanda actionSabotage = new DeplacerPanda(null, new Position(0,0));
+        when(sabotageMock.getActionSabotage(any(), any())).thenReturn(actionSabotage);
 
-        // SCÉNARIO : La stratégie Sabotage a trouvé une cible !
-        DeplacerPanda actionSabotage = new DeplacerPanda(null, new Position(0, 0));
-        when(strategieSabotageMock.getActionSabotage(any(), any())).thenReturn(actionSabotage);
+        Action result = bot.choisirUneAction(gameState, Collections.emptySet());
 
-
-        Action resultat = bot.choisirUneAction(gameState, Collections.emptySet());
-
-
-        assertEquals(actionSabotage, resultat, "Le sabotage doit passer AVANT tout le reste.");
-        // Vérifie qu'on n'a pas essayé de piocher
-        verify(piochePanda, never()).getTaille();
+        assertEquals(actionSabotage, result, "Le Sabotage doit être la priorité absolue.");
+        verify(sabotageMock).getActionSabotage(gameState, bot);
+        // On vérifie qu'on s'arrête là et qu'on ne va pas piocher ou voir les objectifs
+        verifyNoInteractions(pandaUnCoupMock);
     }
 
-
     @Test
-    void testPriorite2_RemplirMain() {
+    void testPriorite2_RemplirMain() throws Exception {
         forcerFinPremierTour();
-        // Sabotage ne renvoie rien (null)
-        when(strategieSabotageMock.getActionSabotage(any(), any())).thenReturn(null);
+        // Pas de sabotage
+        when(sabotageMock.getActionSabotage(any(), any())).thenReturn(null);
 
-
-        // Main vide (0 cartes)
+        // Main vide (< 5 cartes)
         bot.getInventaire().getObjectifs().clear();
         when(piochePanda.getTaille()).thenReturn(1);
 
+        Action result = bot.choisirUneAction(gameState, Collections.emptySet());
 
-        Action resultat = bot.choisirUneAction(gameState, Collections.emptySet());
-
-
-        assertInstanceOf(PiocherObjectif.class, resultat, "Le bot doit piocher si sa main n'est pas pleine.");
+        assertInstanceOf(PiocherObjectif.class, result, "Il doit remplir sa main si elle n'est pas pleine.");
     }
 
-
     @Test
-    void testPriorite3_StrategiePanda() {
+    void testPriorite3_ObjectifPandaUnCoup() throws Exception {
         forcerFinPremierTour();
-        when(strategieSabotageMock.getActionSabotage(any(), any())).thenReturn(null);
-        remplirMainDuBot(); // Pour ne pas piocher
+        when(sabotageMock.getActionSabotage(any(), any())).thenReturn(null);
+        remplirMain(bot); // Pour passer l'étape remplissage
 
+        // On donne un objectif Panda
+        ObjectifPanda obj = new ObjectifPanda(1, List.of());
+        bot.getInventaire().ajouterObjectif(obj);
 
-        // On ajoute un vrai Objectif Panda en main
-        ObjectifPanda objPanda = new ObjectifPanda(1, List.of());
-        bot.getInventaire().ajouterObjectif(objPanda);
+        // La stratégie Panda trouve une solution
+        DeplacerPanda actionGagnante = new DeplacerPanda(null, new Position(1,0));
+        when(pandaUnCoupMock.getStrategiePandaUnCoup(gameState, bot, obj)).thenReturn(actionGagnante);
 
+        Action result = bot.choisirUneAction(gameState, Collections.emptySet());
 
-        // On configure le Mock pour dire "Oui, j'ai une solution pour cet objectif"
-        DeplacerPanda coupGagnant = new DeplacerPanda(null, new Position(1, 0));
-        when(strategiePandaMock.getStrategiePandaUnCoup(any(), any(), eq(objPanda))).thenReturn(coupGagnant);
-
-
-        Action resultat = bot.choisirUneAction(gameState, Collections.emptySet());
-
-
-        assertEquals(coupGagnant, resultat);
+        assertEquals(actionGagnante, result);
     }
 
+    @Test
+    void testPriorite3_ObjectifJardinierUnCoup() throws Exception {
+        forcerFinPremierTour();
+        when(sabotageMock.getActionSabotage(any(), any())).thenReturn(null);
+        remplirMain(bot);
 
-//    @Test
-//    void testPriorite4_StrategieJardinier() {
-//        forcerFinPremierTour();
-//        when(strategieSabotageMock.getActionSabotage(any(), any())).thenReturn(null);
-//        remplirMainDuBot();
-//
-//        // On ajoute un vrai Objectif Jardinier en main
-//        ObjectifJardinier objJardinier = new ObjectifJardinier(null, 0, 0, null, 0);
-//        bot.getInventaire().ajouterObjectif(objJardinier);
-//
-//        // On configure le Mock Jardinier
-//        DeplacerJardinier coupGagnant = new DeplacerJardinier(null, new Position(0, 1));
-//        when(strategieJardinierMock.getStrategieJardinier(any(), any(), eq(objJardinier))).thenReturn(coupGagnant);
-//
-//        Action resultat = bot.choisirUneAction(gameState, Collections.emptySet());
-//
-//        assertEquals(coupGagnant, resultat);
-//    }
+        // On donne un objectif Jardinier
+        ObjectifJardinier obj = new ObjectifJardinier(null, 0,0,null,0);
+        bot.getInventaire().ajouterObjectif(obj);
 
+        // La stratégie Jardinier trouve une solution
+        DeplacerJardinier actionGagnante = new DeplacerJardinier(null, new Position(1,0));
+        when(jardinierUnCoupMock.getStrategieJardinierUnCoup(gameState, bot, obj)).thenReturn(actionGagnante);
+
+        Action result = bot.choisirUneAction(gameState, Collections.emptySet());
+
+        assertEquals(actionGagnante, result);
+    }
 
     @Test
-    void testFallback_Glouton() {
+    void testPriorite4_PandaGloutonGenerale() throws Exception {
         forcerFinPremierTour();
-        when(strategieSabotageMock.getActionSabotage(any(), any())).thenReturn(null);
-        remplirMainDuBot(); // Main pleine
+        when(sabotageMock.getActionSabotage(any(), any())).thenReturn(null);
+        remplirMain(bot);
 
+        // Aucune stratégie "Un Coup" ne marche (renvoient null par défaut)
 
-        // ICI : Aucune stratégie (Panda/Jardinier) ne renvoie de coup (Mockito renvoie null par défaut)
+        // SCÉNARIO : La stratégie générale (glouton) trouve quelque chose
+        DeplacerPanda actionManger = new DeplacerPanda(null, new Position(2,2));
+        when(pandaGeneraleMock.getStrategiePandaGenerale(gameState, bot)).thenReturn(actionManger);
 
+        Action result = bot.choisirUneAction(gameState, Collections.emptySet());
 
-        // SCÉNARIO : Il y a du bambou sur le plateau
-        Position posBambou = new Position(1, 0);
-        when(plateau.getPositionOccupees()).thenReturn(Set.of(posBambou));
-        when(plateau.getNombreDeSectionsAPosition(posBambou)).thenReturn(1);
+        assertEquals(actionManger, result, "Si on ne peut rien finir en un coup, on joue le Panda Général.");
+    }
 
+    @Test
+    void testPriorite5_Aleatoire() throws Exception {
+        forcerFinPremierTour();
+        when(sabotageMock.getActionSabotage(any(), any())).thenReturn(null);
+        remplirMain(bot);
+        // Toutes les stratégies renvoient null...
 
-        // Configuration du Panda pour éviter le NullPointerException
-        fr.cotedazur.univ.polytech.startingpoint.plateau.Panda vraiFauxPanda = mock(fr.cotedazur.univ.polytech.startingpoint.plateau.Panda.class);
-        when(gameState.getPanda()).thenReturn(vraiFauxPanda);
-        when(vraiFauxPanda.accessibleEnUnCoupParPanda(any(), any())).thenReturn(true);
+        // SCÉNARIO : Dernier recours, l'aléatoire
+        Action actionRandom = new PoserParcelle();
+        when(aleatoireMock.getActionAleatoire(gameState, Collections.emptySet())).thenReturn(actionRandom);
 
+        Action result = bot.choisirUneAction(gameState, Collections.emptySet());
 
-        Action resultat = bot.choisirUneAction(gameState, Collections.emptySet());
+        assertEquals(actionRandom, result, "En dernier recours, on appelle la stratégie aléatoire.");
+    }
 
-
-        assertInstanceOf(DeplacerPanda.class, resultat, "Le bot doit manger du bambou par défaut.");
+    // --- Utilitaire pour remplir la main ---
+    private void remplirMain(BotTeacher bot) {
+        for(int i=0; i<5; i++) {
+            bot.getInventaire().ajouterObjectif(new ObjectifPanda(0, List.of()));
+        }
     }
 }

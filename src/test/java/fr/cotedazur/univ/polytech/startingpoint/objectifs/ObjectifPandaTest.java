@@ -3,6 +3,7 @@ package fr.cotedazur.univ.polytech.startingpoint.objectifs;
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotJardinier;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.panda.ObjectifPanda;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

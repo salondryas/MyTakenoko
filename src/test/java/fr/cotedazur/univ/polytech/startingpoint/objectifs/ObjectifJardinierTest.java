@@ -1,12 +1,13 @@
 package fr.cotedazur.univ.polytech.startingpoint.objectifs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.AmenagmentAttribuable;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.BotRandom;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Arrangement;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.amenagements.Bassin;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.amenagements.Bassin;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.jardinier.ObjectifJardinier;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +50,7 @@ class ObjectifJardinierTest {
     @Test
     void validerObjectifJardinierAvecBassin() {
         // NOUVEAU TEST : Objectif Bambou VERT taille 4 AVEC BASSIN
-        ObjectifJardinier objBassin = new ObjectifJardinier(Couleur.VERT, 4, 6, Arrangement.BASSIN, 1);
+        ObjectifJardinier objBassin = new ObjectifJardinier(Couleur.VERT, 4, 6, AmenagmentAttribuable.BASSIN, 1);
 
         Position pos = new Position(1, 0); // Adjacent Étang
         Parcelle parcelle = new Parcelle(pos, Couleur.VERT);

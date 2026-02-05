@@ -1,7 +1,7 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.AmenagmentAttribuable;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.AmenagmentAttribuable;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

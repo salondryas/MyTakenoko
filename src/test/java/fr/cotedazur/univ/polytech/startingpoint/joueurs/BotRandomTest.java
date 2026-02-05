@@ -2,9 +2,12 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Jardinier;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Panda;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.*;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
@@ -24,12 +27,15 @@ class BotRandomTest {
     BotRandom bot;
 
     @Mock GameState gameStateMock;
-    @Mock Plateau plateauMock;
+    @Mock
+    Plateau plateauMock;
     @Mock PiocheParcelle piocheParcelleMock;
     @Mock PiocheObjectif piocheJardinierMock;
     @Mock PiocheObjectif piochePandaMock;
-    @Mock Jardinier jardinierMock;
-    @Mock Panda pandaMock;
+    @Mock
+    Jardinier jardinierMock;
+    @Mock
+    Panda pandaMock;
 
     @BeforeEach
     void setUp() {
@@ -285,8 +291,8 @@ class BotRandomTest {
 
         // ARRANGE
         // On mock la session de sélection (les 3 cartes piochées)
-        fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle sessionMock =
-                mock(fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle.class);
+        fr.cotedazur.univ.polytech.startingpoint.elements.pioche.SelectionParcelle sessionMock =
+                mock(fr.cotedazur.univ.polytech.startingpoint.elements.pioche.SelectionParcelle.class);
 
         Parcelle p1 = new Parcelle(Couleur.VERT);
         Parcelle p2 = new Parcelle(Couleur.ROSE);
@@ -313,8 +319,8 @@ class BotRandomTest {
     @Test
     void testChoisirParcelle_SiVide() {
         // Cas limite : Si la sélection est vide (ne devrait pas arriver techniquement, mais bon)
-        fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle sessionMock =
-                mock(fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle.class);
+        fr.cotedazur.univ.polytech.startingpoint.elements.pioche.SelectionParcelle sessionMock =
+                mock(fr.cotedazur.univ.polytech.startingpoint.elements.pioche.SelectionParcelle.class);
         when(sessionMock.getParcellesAChoisir()).thenReturn(Collections.emptyList());
 
         Parcelle choisie = bot.choisirParcelle(sessionMock, plateauMock);

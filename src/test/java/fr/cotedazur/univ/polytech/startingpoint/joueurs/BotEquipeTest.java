@@ -2,11 +2,10 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.SelectionParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

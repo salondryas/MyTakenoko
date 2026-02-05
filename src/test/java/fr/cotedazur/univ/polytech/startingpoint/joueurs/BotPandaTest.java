@@ -2,23 +2,23 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.ObjectifPanda;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.*;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Jardinier;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Panda;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.panda.ObjectifPanda;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.PiocheParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -26,146 +26,203 @@ class BotPandaTest {
 
     BotPanda bot;
 
+    @Mock GameState gameState;
     @Mock
-    GameState gameStateMock;
+    Plateau plateau;
     @Mock
-    Plateau plateauMock;
+    Panda panda;
     @Mock
-    Jardinier jardinierMock;
-    @Mock
-    Panda pandaMock;
-    @Mock
-    PiocheParcelle piocheParcelleMock;
-    @Mock
-    PiocheObjectif piocheObjectifMock;
+    Jardinier jardinier;
+    @Mock InventaireJoueur inventaire;
+    @Mock PiocheParcelle piocheParcelle;
+    // Mocks des pioches d'objectifs
+    @Mock fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif piocheObjPanda;
+    @Mock fr.cotedazur.univ.polytech.startingpoint.objectifs.PiocheObjectif piocheObjJardinier;
 
     @BeforeEach
     void setUp() {
-        bot = new BotPanda("BotPandaTest");
+        MockitoAnnotations.openMocks(this);
+        bot = new BotPanda("PandaTester");
 
-        // Initialisation des Mocks
-        gameStateMock = mock(GameState.class);
-        plateauMock = mock(Plateau.class);
-        jardinierMock = mock(Jardinier.class);
-        pandaMock = mock(Panda.class);
-        piocheParcelleMock = mock(PiocheParcelle.class);
-        piocheObjectifMock = mock(PiocheObjectif.class);
+        // Injection "manuelle" du mock inventaire (via mockito spy si besoin, ou juste configuration du bot)
+        // Comme on ne peut pas injecter l'inventaire facilement sans setter, on va mocker le comportement
+        // Si ton Bot crée son inventaire avec "new", on ne peut pas le mocker directement sans Reflection.
+        // SUPPOSITION : Tu as accès à getInventaire(). Pour ce test, on va supposer qu'on utilise un "Spy" ou que tu peux set l'inventaire.
+        // Sinon, on remplit le vrai inventaire.
 
-        // Configuration Lenient de base
-        lenient().when(gameStateMock.getPlateau()).thenReturn(plateauMock);
-        lenient().when(gameStateMock.getJardinier()).thenReturn(jardinierMock);
-        lenient().when(gameStateMock.getPanda()).thenReturn(pandaMock);
-        lenient().when(gameStateMock.getPiocheParcelle()).thenReturn(piocheParcelleMock);
-        lenient().when(gameStateMock.getPiochePanda()).thenReturn(piocheObjectifMock);
-        lenient().when(piocheObjectifMock.getTaille()).thenReturn(10);
-
-        // IMPORTANT : Le nouveau bot itère sur les parcelles du plateau.
-        // On renvoie une map vide par défaut pour éviter les NullPointerException.
-        lenient().when(plateauMock.getParcellesMap()).thenReturn(Collections.emptyMap());
-
-        // Par défaut, pas de déplacements possibles
-        lenient().when(plateauMock.getTrajetsLigneDroite(any())).thenReturn(Collections.emptyList());
-        lenient().when(plateauMock.getEmplacementsDisponibles()).thenReturn(Collections.emptyList());
+        // --- Configuration du GameState ---
+        when(gameState.getPlateau()).thenReturn(plateau);
+        when(gameState.getPanda()).thenReturn(panda);
+        when(gameState.getJardinier()).thenReturn(jardinier);
+        when(gameState.getPiochePanda()).thenReturn(piocheObjPanda);
+        when(gameState.getPiocheJardinier()).thenReturn(piocheObjJardinier);
+        when(gameState.getPiocheParcelle()).thenReturn(piocheParcelle);
     }
 
-    // --- NOUVEAU TEST : PRIORITÉ IRRIGATION ---
+    // =========================================================================
+    // 0. TEST URGENCE : PAS D'OBJECTIF
+    // =========================================================================
     @Test
-    void testStrat0_PrioritePoserIrrigation() {
-        // SCÉNARIO : Le bot a un objectif VERT.
-        // Il a un canal en stock.
-        // Il y a une parcelle VERTE sur le plateau, mais elle est SÈCHE.
+    void test0_Urgence_PiocherSiPasDObjectif() {
+        // Setup : Inventaire vide
+        bot.getInventaire().getObjectifs().clear();
 
-        // 1. Objectif Vert
-        bot.getInventaire().ajouterObjectif(new ObjectifPanda(2, List.of(Couleur.VERT, Couleur.VERT)));
-        // 2. On donne un canal au bot
+        when(piocheObjPanda.getTaille()).thenReturn(5);
+
+        Action action = bot.choisirUneAction(gameState, Collections.emptySet());
+
+        assertInstanceOf(PiocherObjectif.class, action);
+        // On vérifie qu'il pioche du PANDA en priorité
+        // (Note: adapte le cast selon ta classe PiocherObjectif)
+        assertEquals(TypeAction.PIOCHER_OBJECTIF, action.getType());
+    }
+
+    // =========================================================================
+    // 3. TEST PLAN A : MANGER (Déjà fait, mais rappel pour complétude)
+    // =========================================================================
+    @Test
+    void test3_MangerBambou_SiDisponible() {
+        // Objectif : Vert
+        ObjectifPanda obj = mock(ObjectifPanda.class);
+        when(obj.getCouleurs()).thenReturn(List.of(Couleur.VERT));
+        when(obj.getObjMap()).thenReturn(Map.of(Couleur.VERT, 1)); // Important pour StrategieGenerale
+        bot.getInventaire().ajouterObjectif(obj);
+
+        // Plateau : Vert dispo
+        Position pos = new Position(1,0);
+        Parcelle p = mock(Parcelle.class);
+        when(p.getCouleur()).thenReturn(Couleur.VERT);
+
+        when(plateau.getPositionOccupees()).thenReturn(Set.of(pos));
+        when(plateau.getParcelle(pos)).thenReturn(p);
+        when(plateau.getNombreDeSectionsAPosition(pos)).thenReturn(1);
+        when(panda.accessibleEnUnCoupParPanda(gameState, pos)).thenReturn(true);
+
+        Action action = bot.choisirUneAction(gameState, Collections.emptySet());
+
+        assertInstanceOf(DeplacerPanda.class, action);
+    }
+
+    // =========================================================================
+    // 4. TEST PLAN B : FAIRE POUSSER (Jardinier)
+    // =========================================================================
+    @Test
+    void test4_Jardinier_SiPasDeBambouMaisParcellePrete() {
+        // SCENARIO : Je veux du ROSE. Il n'y en a pas à manger (0 section).
+        // MAIS il y a une parcelle ROSE, Irriguée, Accessible au Jardinier.
+
+        // 1. Objectif Rose
+        ObjectifPanda obj = mock(ObjectifPanda.class);
+        when(obj.getCouleurs()).thenReturn(List.of(Couleur.ROSE));
+        when(obj.getObjMap()).thenReturn(Map.of(Couleur.ROSE, 1));
+        bot.getInventaire().ajouterObjectif(obj);
+
+        // 2. Plateau : Parcelle Rose vide
+        Position pos = new Position(0,1);
+        Parcelle pRose = mock(Parcelle.class);
+        when(pRose.getCouleur()).thenReturn(Couleur.ROSE);
+        when(pRose.estIrriguee()).thenReturn(true);
+        when(pRose.getNbSectionsSurParcelle()).thenReturn(0); // Vide, donc Panda ne peut pas manger
+
+        // Configuration pour la StrategiePanda (qui va renvoyer null car pas de bambou)
+        when(plateau.getPositionOccupees()).thenReturn(Set.of(pos));
+        when(plateau.getParcelle(pos)).thenReturn(pRose);
+        when(plateau.getNombreDeSectionsAPosition(pos)).thenReturn(0);
+
+        // Configuration pour le Jardinier (Plan B)
+        when(jardinier.getPosition()).thenReturn(new Position(0,0));
+        when(plateau.getTrajetsLigneDroite(any())).thenReturn(List.of(pos)); // Jardinier peut y aller
+
+        Action action = bot.choisirUneAction(gameState, Collections.emptySet());
+
+        assertInstanceOf(DeplacerJardinier.class, action, "Le bot doit envoyer le jardinier faire pousser");
+        assertEquals(pos, ((DeplacerJardinier)action).getDestination());
+    }
+
+    // =========================================================================
+    // 5. TEST PLAN C : POSER PARCELLE
+    // =========================================================================
+    @Test
+    void test5_PoserParcelle_SiRienDAutreAFaire() {
+        // SCENARIO : Pas de bambou, pas de parcelle irriguée à faire pousser.
+        // Il faut étendre le terrain.
+
+        // Objectif bidon
+        bot.getInventaire().ajouterObjectif(mock(ObjectifPanda.class));
+
+        // Mocks pour que les étapes précédentes échouent
+        when(plateau.getPositionOccupees()).thenReturn(Collections.emptySet()); // Pas de parcelles
+        when(piocheParcelle.getSize()).thenReturn(1);
+        when(plateau.getEmplacementsDisponibles()).thenReturn(List.of(new Position(1,0)));
+
+        Action action = bot.choisirUneAction(gameState, Collections.emptySet());
+
+        assertInstanceOf(PoserParcelle.class, action);
+    }
+
+    // =========================================================================
+    // 2. TEST LOGISTIQUE : POSER IRRIGATION
+    // =========================================================================
+    @Test
+    void test2_PoserIrrigation_SiInventaireEtUtile() {
+        // SCENARIO : J'ai un canal en stock. J'ai un objectif JAUNE.
+        // Il y a une parcelle JAUNE sèche. Je peux l'irriguer.
+
+        // 1. Inventaire : 1 canal + Objectif Jaune
         bot.getInventaire().ajouterIrrigation();
+        ObjectifPanda obj = mock(ObjectifPanda.class);
+        when(obj.getCouleurs()).thenReturn(List.of(Couleur.JAUNE));
+        bot.getInventaire().ajouterObjectif(obj);
 
-        // 3. Setup du plateau avec une parcelle verte SECHE
-        Position posVerte = new Position(1, 0);
-        Parcelle parcelleSeche = mock(Parcelle.class);
-        when(parcelleSeche.getCouleur()).thenReturn(Couleur.VERT);
-        when(parcelleSeche.estIrriguee()).thenReturn(false); // Sèche !
+        // 2. Plateau : Parcelle Jaune Sèche en (0,1)
+        Position posJaune = new Position(0,1);
+        Parcelle pJaune = mock(Parcelle.class);
+        when(pJaune.getCouleur()).thenReturn(Couleur.JAUNE);
+        when(pJaune.estIrriguee()).thenReturn(false); // Sèche !
 
-        // On met cette parcelle dans la Map du plateau
-        Map<Position, Parcelle> mapParcelles = new HashMap<>();
-        mapParcelles.put(posVerte, parcelleSeche);
-        when(plateauMock.getParcellesMap()).thenReturn(mapParcelles);
+        // Map des parcelles (pour l'itération)
+        when(plateau.getParcellesMap()).thenReturn(Map.of(posJaune, pJaune));
 
-        // 4. On dit qu'il est possible de placer un canal ici
-        when(plateauMock.peutPlacerCanal(any(), any())).thenReturn(true);
-        when(plateauMock.aCanalEntre(any(), any())).thenReturn(false);
+        // 3. Logique de placement de canal
+        // On simule qu'on peut placer un canal entre (0,1) et (1,1) par exemple
+        Position voisin = posJaune.add(PositionsRelatives.SIX.getPosition());
+        when(plateau.peutPlacerCanal(posJaune, voisin)).thenReturn(true);
+        when(plateau.aCanalEntre(posJaune, voisin)).thenReturn(false);
 
-        // Action
-        List<Action> actions = bot.jouer(gameStateMock);
+        Action action = bot.choisirUneAction(gameState, Collections.emptySet());
 
-        // Vérification
-        assertFalse(actions.isEmpty());
-        assertTrue(actions.get(0) instanceof PoserCanalDirrigation,
-                "Si j'ai un canal et une parcelle sèche utile, je dois irriguer en priorité !");
+        assertInstanceOf(PoserCanalDirrigation.class, action, "Le bot doit poser son canal pour irriguer la parcelle jaune");
     }
 
+    // =========================================================================
+    // 6. TEST DERNIER RECOURS : PRENDRE IRRIGATION
+    // =========================================================================
     @Test
-    void testStrat1_PrioriteDeplacerPanda() {
-        // SCÉNARIO : Le bot a un objectif Panda "2 VERTS".
-        // Une parcelle VERTE avec du bambou est accessible.
+    void test6_PrendreIrrigation_SiBloqueParEau() {
+        // SCENARIO : Rien à manger, rien à faire pousser (tout est sec).
+        // J'ai besoin de VERT. Il y a du VERT sec.
+        // Je n'ai pas de canal en stock. -> Je dois en prendre un.
 
-        ObjectifPanda objVert = new ObjectifPanda(2, List.of(Couleur.VERT, Couleur.VERT));
-        bot.getInventaire().ajouterObjectif(objVert);
-        // Note : Bot a 0 canal par défaut, donc il ne tente pas d'irriguer
+        // Inventaire vide de canaux
+        while(bot.getInventaire().getNombreCanauxDisponibles() > 0) bot.getInventaire().retirerIrrigation();
 
-        Position posPanda = new Position(0, 0);
-        Position posCible = new Position(1, 0);
+        ObjectifPanda obj = mock(ObjectifPanda.class);
+        when(obj.getCouleurs()).thenReturn(List.of(Couleur.VERT));
+        bot.getInventaire().ajouterObjectif(obj);
 
-        when(pandaMock.getPositionPanda()).thenReturn(posPanda);
-        when(plateauMock.getTrajetsLigneDroite(posPanda)).thenReturn(List.of(posCible));
+        // Plateau : Vert Sec
+        Position pos = new Position(1,0);
+        Parcelle pVert = mock(Parcelle.class);
+        when(pVert.getCouleur()).thenReturn(Couleur.VERT);
+        when(pVert.estIrriguee()).thenReturn(false);
 
-        Parcelle parcelleCible = mock(Parcelle.class);
-        when(parcelleCible.getCouleur()).thenReturn(Couleur.VERT);
+        when(plateau.getParcellesMap()).thenReturn(Map.of(pos, pVert));
+        // On s'assure que les autres plans échouent (pas de pioche parcelle dispo par exemple)
+        when(piocheParcelle.getSize()).thenReturn(0);
+        when(plateau.getPositionOccupees()).thenReturn(Collections.emptySet()); // Panda mange rien
 
-        // Mises à jour des mocks pour la cohérence
-        when(plateauMock.getParcellesMap()).thenReturn(Map.of(posCible, parcelleCible));
+        Action action = bot.choisirUneAction(gameState, Collections.emptySet());
 
-        when(plateauMock.getNombreDeSectionsAPosition(posCible)).thenReturn(1);
-        when(plateauMock.getParcelle(posCible)).thenReturn(parcelleCible);
-
-        // Action
-        List<Action> actions = bot.jouer(gameStateMock);
-
-        // Vérification
-        assertFalse(actions.isEmpty());
-        assertTrue(actions.get(0) instanceof DeplacerPanda, "Le bot devrait prioriser de manger le bambou vert");
-    }
-
-    @Test
-    void testStrat2_PlanB_DeplacerJardinier() {
-        // SCÉNARIO : Pas de bambou à manger, mais on peut faire pousser du VERT.
-
-        bot.getInventaire().ajouterObjectif(new ObjectifPanda(2, List.of(Couleur.VERT, Couleur.VERT)));
-
-        // Le panda est bloqué
-        when(plateauMock.getTrajetsLigneDroite(any())).thenReturn(Collections.emptyList());
-
-        // Setup du Jardinier
-        Position posJardinier = new Position(2, 2);
-        Position posCible = new Position(2, 3);
-
-        when(jardinierMock.getPosition()).thenReturn(posJardinier);
-        when(plateauMock.getTrajetsLigneDroite(posJardinier)).thenReturn(List.of(posCible));
-
-        Parcelle parcelleJardinier = mock(Parcelle.class);
-        when(parcelleJardinier.getCouleur()).thenReturn(Couleur.VERT);
-        when(parcelleJardinier.estIrriguee()).thenReturn(true);
-        when(parcelleJardinier.getNbSectionsSurParcelle()).thenReturn(1);
-
-        // Mise à jour de la Map (important pour le scan du bot)
-        when(plateauMock.getParcellesMap()).thenReturn(Map.of(posCible, parcelleJardinier));
-        when(plateauMock.getParcelle(posCible)).thenReturn(parcelleJardinier);
-
-        // Action
-        List<Action> actions = bot.jouer(gameStateMock);
-
-        // Vérification
-        assertFalse(actions.isEmpty());
-        assertTrue(actions.get(0) instanceof DeplacerJardinier, "Le bot devrait déplacer le jardinier pour faire pousser");
+        assertInstanceOf(ObtenirCanalDirrigation.class, action);
     }
 }

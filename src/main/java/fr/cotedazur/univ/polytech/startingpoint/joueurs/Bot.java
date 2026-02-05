@@ -4,16 +4,16 @@ import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.actions.Action;
 import fr.cotedazur.univ.polytech.startingpoint.actions.ActionJouableContext;
 import fr.cotedazur.univ.polytech.startingpoint.actions.TypeAction;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.AmenagmentAttribuable;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.AmenagmentAttribuable;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.SelectionParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
-import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
 
 import java.util.*;
-import java.util.logging.Logger;
+
+import static fr.cotedazur.univ.polytech.startingpoint.GameEngine.LOGGER;
 
 public abstract class Bot {
 
@@ -48,7 +48,7 @@ public abstract class Bot {
                 inventaire.getObjectifs());
         for (var obj : copy) {
             if (obj.valider(gameState, this)) {
-                Logger.info(getNom() + " a validé l'objectif : " + obj.toString());
+                LOGGER.info(getNom() + " a validé l'objectif : " + obj.toString());
                 inventaire.ajouterPoints(obj.getPoints());
                 inventaire.incrementerObjectifsValides();
                 inventaire.retirerObjectif(obj);

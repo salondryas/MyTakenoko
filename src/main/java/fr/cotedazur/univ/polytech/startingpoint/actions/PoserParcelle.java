@@ -2,15 +2,16 @@ package fr.cotedazur.univ.polytech.startingpoint.actions;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.SelectionParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static fr.cotedazur.univ.polytech.startingpoint.GameEngine.LOGGER;
 
 public class PoserParcelle implements Action {
     private Parcelle parcelle = null;
@@ -40,7 +41,7 @@ public class PoserParcelle implements Action {
 
         SelectionParcelle session = new SelectionParcelle(parcellesAChoisir, pioche);
 
-        Logger.print(joueur.getNom() + "a le choix entre les parcelles : "+ parcellesAChoisir);
+        LOGGER.info(joueur.getNom() + "a le choix entre les parcelles : "+ parcellesAChoisir);
 
         return joueur.choisirParcelle(session, plateau);
     }
@@ -53,12 +54,8 @@ public class PoserParcelle implements Action {
         position = positionChoisie;
         parcelle = parcelleChoisie;
         // SÉCURITÉ : On ne touche au plateau que si la parcelle existe vraiment
-        if (parcelleChoisie != null) {
+        if (parcelleChoisie != null)
             plateau.placerParcelle(parcelleChoisie, positionChoisie);
-        } else {
-            // Optionnel : Un petit log pour le débug
-            System.err.println("⚠️ Attention : Tentative de poser une parcelle nulle en " + positionChoisie);
-        }
     }
 
     @Override
@@ -70,7 +67,7 @@ public class PoserParcelle implements Action {
 
         poserParcelle(plateau, positionChoisie, parcelleChoisie);
 
-        Logger.print(joueur.getNom() + " " + this);
+        LOGGER.info(joueur.getNom() + " " + this);
     }
     @Override
     public TypeAction getType() {

@@ -2,17 +2,11 @@ package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
-import fr.cotedazur.univ.polytech.startingpoint.Strategies.StrategieJardinierUnCoup;
-import fr.cotedazur.univ.polytech.startingpoint.Strategies.StrategiePandaUnCoup;
-import fr.cotedazur.univ.polytech.startingpoint.Strategies.StrategieSabotage;
 import fr.cotedazur.univ.polytech.startingpoint.actions.*;
+import fr.cotedazur.univ.polytech.startingpoint.joueurs.Strategies.*;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.*;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Arrangement;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 
 
@@ -25,14 +19,14 @@ public class BotTeacher extends Bot {
     private StrategieSabotage strategieSabotage = new StrategieSabotage();
     private StrategiePandaUnCoup strategiePanda = new StrategiePandaUnCoup();
     private StrategieJardinierUnCoup strategieJardinier = new StrategieJardinierUnCoup();
-
+    private StrategiePandaGenerale strategiePandaGenerale = new StrategiePandaGenerale();
+    private StrategieAleatoire strategieAleatoire = new StrategieAleatoire();
 
     public BotTeacher(String nom) {
         super(nom);
         this.estPremierTour = true;
         this.random = new Random();
     }
-
 
     @Override
     public Action choisirUneAction(GameState gameState, Set<TypeAction> typesInterdits) {
@@ -49,18 +43,12 @@ public class BotTeacher extends Bot {
             }
         }
 
-
         Plateau plateau = gameState.getPlateau();
-
-
         // 2. SABOTAGE INTELLIGENT (Bloquer l'adversaire sans se tirer une balle dans le pied)
         Action actionSabotage = strategieSabotage.getActionSabotage(gameState, this);
         if (actionSabotage != null) {
             return actionSabotage;
         }
-
-
-
 
         // 3. REMPLISSAGE DE MAIN
         if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF) && getInventaire().getObjectifs().size() < 5) {
@@ -72,10 +60,8 @@ public class BotTeacher extends Bot {
                 return new PiocherObjectif(TypeObjectif.PARCELLE);
         }
 
-
         // 4. TENTATIVE DE RÉUSSITE D'OBJECTIFS
         for (Objectif objectifEnMain : getInventaire().getObjectifs()) {
-
 
             // A. OBJECTIF PANDA
             if (objectifEnMain.getType() == TypeObjectif.PANDA) {
@@ -87,139 +73,30 @@ public class BotTeacher extends Bot {
                 }
             }
 
-
             // B. OBJECTIF JARDINIER
             if (objectifEnMain.getType() == TypeObjectif.JARDINIER) {
                 if (!typesInterdits.contains(TypeAction.DEPLACER_JARDINIER)) {
                     Action actionJardinier = strategieJardinier.getStrategieJardinierUnCoup(gameState, this, objectifEnMain);
-                    if(actionJardinier != null) {return actionJardinier;}
+                    if (actionJardinier != null) {
+                        return actionJardinier;
+                    }
+                }
             }
-            }
-
-
         }
-
 
         // 5. STRATÉGIE PANDA GLOUTON (Intelligente puis par défaut)
         if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA)) {
-
-
-            // ETAPE 1 : Identifier les couleurs dont on a besoin pour nos objectifs
-            Set<Couleur> couleursRecherchees = new HashSet<>();
-            Map<Couleur, Integer> bambousPossedes = getInventaire().getBambous();
-
-
-            for (Objectif obj : getInventaire().getObjectifs()) {
-                if (obj.getType() == TypeObjectif.PANDA) {
-                    Map<Couleur, Integer> requis = obj.getObjMap();
-                    for (Map.Entry<Couleur, Integer> entry : requis.entrySet()) {
-                        Couleur c = entry.getKey();
-                        int qteRequise = entry.getValue();
-                        int qtePossedee = bambousPossedes.getOrDefault(c, 0);
-                        if (qtePossedee < qteRequise) {
-                            couleursRecherchees.add(c);
-                        }
-                    }
-                }
-            }
-
-
-            // ETAPE 2 : Chercher d'abord les bambous "utiles"
-            if (!couleursRecherchees.isEmpty()) {
-                for (Position pos : plateau.getPositionOccupees()) {
-                    if (plateau.getNombreDeSectionsAPosition(pos) > 0) {
-                        Couleur couleurBambou = plateau.getParcelle(pos).getCouleur();
-                        if (couleursRecherchees.contains(couleurBambou)) {
-                            if (gameState.getPanda().accessibleEnUnCoupParPanda(gameState, pos)) {
-                                return new DeplacerPanda(gameState.getPanda(), pos);
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            // ETAPE 3 : Sinon, manger n'importe quoi
-            for (Position pos : plateau.getPositionOccupees()) {
-                if (plateau.getNombreDeSectionsAPosition(pos) > 0) {
-                    if (gameState.getPanda().accessibleEnUnCoupParPanda(gameState, pos)) {
-                        return new DeplacerPanda(gameState.getPanda(), pos);
-                    }
-                }
+            Action actionPanda = strategiePandaGenerale.getStrategiePandaGenerale(gameState, this);
+            if (actionPanda != null) {
+                return actionPanda;
             }
         }
-
 
         // --- 6. CHOIX ALÉATOIRE (Dernier recours) ---
-        return choisirActionAleatoire(gameState, typesInterdits);
-    }
-
-
-    // ==========================================================
-
-
-    private Action choisirActionAleatoire(GameState gameState, Set<TypeAction> typesInterdits) {
-        List<TypeAction> actionsPossibles = new ArrayList<>();
-
-
-        if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF))
-            actionsPossibles.add(TypeAction.PIOCHER_OBJECTIF);
-        if (!typesInterdits.contains(TypeAction.POSER_PARCELLE) && !gameState.getPiocheParcelle().estVide())
-            actionsPossibles.add(TypeAction.POSER_PARCELLE);
-        if (!typesInterdits.contains(TypeAction.DEPLACER_JARDINIER))
-            actionsPossibles.add(TypeAction.DEPLACER_JARDINIER);
-        if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA))
-            actionsPossibles.add(TypeAction.DEPLACER_PANDA);
-
-
-        if (actionsPossibles.isEmpty())
-            return null;
-
-
-        Collections.shuffle(actionsPossibles, random);
-
-
-        for (TypeAction type : actionsPossibles) {
-            switch (type) {
-                case PIOCHER_OBJECTIF:
-                    int randType = random.nextInt(3);
-                    if (randType == 0 && gameState.getPiochePanda().getTaille() > 0)
-                        return new PiocherObjectif(TypeObjectif.PANDA);
-                    if (randType == 1 && gameState.getPiocheJardinier().getTaille() > 0)
-                        return new PiocherObjectif(TypeObjectif.JARDINIER);
-                    if (gameState.getPiocheObjectifParcelle().getTaille() > 0)
-                        return new PiocherObjectif(TypeObjectif.PARCELLE);
-                    break;
-
-
-                case POSER_PARCELLE:
-                    return new PoserParcelle();
-
-
-                case DEPLACER_JARDINIER:
-                    List<Position> posJ = gameState.getPlateau()
-                            .getTrajetsLigneDroite(gameState.getJardinier().getPosition());
-                    posJ.remove(gameState.getJardinier().getPosition());
-                    if (!posJ.isEmpty())
-                        return new DeplacerJardinier(gameState.getJardinier(), posJ.get(random.nextInt(posJ.size())));
-                    break;
-
-
-                case DEPLACER_PANDA:
-                    List<Position> posP = gameState.getPlateau()
-                            .getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
-                    posP.remove(gameState.getPanda().getPositionPanda());
-                    if (!posP.isEmpty())
-                        return new DeplacerPanda(gameState.getPanda(), posP.get(random.nextInt(posP.size())));
-                    break;
-            }
-        }
-        return null;
+        return strategieAleatoire.getActionAleatoire(gameState, typesInterdits);
     }
 
     /// =================== METEO ===================
-    ///
-
 
     // Implémentation pour la pluie
     @Override

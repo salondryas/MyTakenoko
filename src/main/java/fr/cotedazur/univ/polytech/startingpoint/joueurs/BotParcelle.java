@@ -7,20 +7,20 @@ import fr.cotedazur.univ.polytech.startingpoint.actions.PoserParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.actions.TypeAction;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.Objectif;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.TypeObjectif;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.GrillePlateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.SelectionParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.GrillePlateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.SelectionParcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Couleur;
-import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Logger;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives;
 import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import static fr.cotedazur.univ.polytech.startingpoint.GameEngine.LOGGER;
 
 /**
  * Bot spécialisé dans les Objectifs Parcelles (Jardinier Constructeur).
@@ -96,7 +96,7 @@ public class BotParcelle extends Bot {
 
         // 3. Mémorisation pour l'étape suivante
         this.positionMemoriseePourLeTour = meilleurPos;
-        Logger.print(getNom() + " a calculé le meilleur coup : " + meilleurTuile.getCouleur() + " en " + meilleurPos
+        LOGGER.info(getNom() + " a calculé le meilleur coup : " + meilleurTuile.getCouleur() + " en " + meilleurPos
                 + " (Score: " + meilleurScore + ")");
 
         // Validation du choix dans le moteur de jeu

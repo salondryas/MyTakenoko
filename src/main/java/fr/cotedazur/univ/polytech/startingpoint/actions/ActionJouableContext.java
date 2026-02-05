@@ -1,11 +1,11 @@
 package fr.cotedazur.univ.polytech.startingpoint.actions;
 
 public class ActionJouableContext {
-    private static final int regularTokenCount = 2; // nombre de jetons regulier par défaut
+    private static final int REGULAR_TOKEN_COUNT = 2; // nombre de jetons regulier par défaut
     private int tokenCount; // nombre de jetons variable
 
     public ActionJouableContext() {
-        this.tokenCount = regularTokenCount;
+        this.tokenCount = REGULAR_TOKEN_COUNT;
     }
 
     // ======= getters ============
@@ -21,7 +21,7 @@ public class ActionJouableContext {
     }
 
     public void resetTokenCount() {
-        this.tokenCount = regularTokenCount;
+        this.tokenCount = REGULAR_TOKEN_COUNT;
     }
 
     // ======== autres methodes =========

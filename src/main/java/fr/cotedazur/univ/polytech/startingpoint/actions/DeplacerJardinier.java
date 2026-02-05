@@ -2,16 +2,17 @@ package fr.cotedazur.univ.polytech.startingpoint.actions;
 
 import fr.cotedazur.univ.polytech.startingpoint.GameState;
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.GrillePlateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
-import java.util.logging.Logger;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.GrillePlateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Jardinier;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.PositionsRelatives;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static fr.cotedazur.univ.polytech.startingpoint.GameEngine.LOGGER;
 
 public class DeplacerJardinier implements Action {
     private Jardinier jardinier;
@@ -20,6 +21,10 @@ public class DeplacerJardinier implements Action {
     public DeplacerJardinier(Jardinier jardinier, Position destination) {
         this.jardinier = jardinier;
         this.destination = destination;
+    }
+
+    public Position getDestination() {
+        return destination;
     }
 
     @Override
@@ -50,7 +55,7 @@ public class DeplacerJardinier implements Action {
             if (p.estIrriguee()) {
                 boolean aPousse = p.pousserBambou();
                 if (aPousse) {
-                    Logger.print(" Le jardinier fait pousser du bambou en " + p.getPosition());
+                    LOGGER.info(" Le jardinier fait pousser du bambou en " + p.getPosition());
                 }
             }
         }

@@ -1,6 +1,6 @@
 package fr.cotedazur.univ.polytech.startingpoint.joueurs;
 
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 
 import java.util.List;

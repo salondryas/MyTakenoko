@@ -1,8 +1,8 @@
 package fr.cotedazur.univ.polytech.startingpoint.utilitaires.affichage;
 
-import fr.cotedazur.univ.polytech.startingpoint.plateau.GrillePlateau;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.GrillePlateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 import java.util.Map;

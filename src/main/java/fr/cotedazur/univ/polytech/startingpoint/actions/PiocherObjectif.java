@@ -15,6 +15,10 @@ public class PiocherObjectif implements Action {
         this.type = type;
     }
 
+    public TypeObjectif getTypeObjectif() {
+        return this.type;
+    }
+
     @Override
     public void appliquer(GameState gameState, Bot bot) {
         // 1. Sélectionner la bonne pioche

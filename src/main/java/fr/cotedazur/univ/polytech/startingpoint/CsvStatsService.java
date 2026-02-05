@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static fr.cotedazur.univ.polytech.startingpoint.GameEngine.LOGGER;
+
 public class CsvStatsService {
 
     private static final Path DOSSIER_STATS = Paths.get("stats");
@@ -78,7 +80,7 @@ public class CsvStatsService {
                 }
             }
         } catch (IOException | CsvException e) {
-            e.printStackTrace();
+            LOGGER.warning("Erreur critique lors de la simulation : " + e.getMessage());
         }
         return map;
     }
@@ -93,7 +95,7 @@ public class CsvStatsService {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.warning("Erreur critique lors de la simulation : " + e.getMessage());
         }
     }
 }

@@ -1,6 +1,6 @@
 package fr.cotedazur.univ.polytech.startingpoint.objectifs.parcelle;
 
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Parcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
 import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 
 import java.util.ArrayList;

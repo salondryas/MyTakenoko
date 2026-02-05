@@ -2,11 +2,17 @@ package fr.cotedazur.univ.polytech.startingpoint;
 
 import fr.cotedazur.univ.polytech.startingpoint.joueurs.Bot;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.*;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.jardinier.CarteBambou;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.jardinier.ObjectifJardinier;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.panda.CartePanda;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.panda.ObjectifPanda;
 import fr.cotedazur.univ.polytech.startingpoint.objectifs.parcelle.CarteParcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Jardinier;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Panda;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.pioche.PiocheParcelle;
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Jardinier;
+import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Panda;
+import fr.cotedazur.univ.polytech.startingpoint.elements.pioche.PiocheParcelle;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.objectifs.parcelle.ObjectifParcelle;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -145,13 +151,19 @@ public class GameState {
 
     public Bot determinerMeilleurJoueur() {
         Bot gagnant = null;
-        int meilleurScore = -1;
+        int meilleurScore = Integer.MIN_VALUE;
+        boolean egalitePremierScore = false;
+
         for (Bot bot : this.joueurs) {
             if (bot.getScore() > meilleurScore) {
                 meilleurScore = bot.getScore();
                 gagnant = bot;
+                egalitePremierScore = false;
+            } else if (bot.getScore() == meilleurScore) {
+                egalitePremierScore = true;
             }
         }
-        return gagnant;
+
+        return egalitePremierScore ? null : gagnant;
     }
 }

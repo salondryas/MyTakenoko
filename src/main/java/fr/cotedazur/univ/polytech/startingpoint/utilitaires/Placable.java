@@ -1,6 +1,6 @@
 package fr.cotedazur.univ.polytech.startingpoint.utilitaires;
 
-import fr.cotedazur.univ.polytech.startingpoint.plateau.Plateau;
+import fr.cotedazur.univ.polytech.startingpoint.elements.plateau.Plateau;
 
 public abstract class Placable {
     protected Position position;

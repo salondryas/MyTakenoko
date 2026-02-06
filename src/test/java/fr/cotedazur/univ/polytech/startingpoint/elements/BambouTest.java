@@ -16,15 +16,6 @@ class BambouTest {
         bambouVert = new Bambou(Couleur.VERT);
     }
 
-    /*
-     * @Test
-     * void testInitialisation() {
-     * assertEquals(1, bambouVert.getNumberOfSections(),
-     * "Un bambou doit commencer avec 1 section.");
-     * assertEquals(Couleur.VERT, bambouVert.getSectionColour());
-     * }
-     */
-
     @Test
     void testCroissanceLimitee() {
         bambouVert.croissance(); // 2 sections

@@ -137,7 +137,7 @@ class MeteoTest {
         for (AmenagmentAttribuable amenagement : AmenagmentAttribuable.values()) {
             while (amenagement.getQuantite() > 0) {
                 try {
-                    amenagement.pickArrangement();
+                    amenagement.pickAmenagement();
                 } catch (QuantityException e) {
                     break;
                 }

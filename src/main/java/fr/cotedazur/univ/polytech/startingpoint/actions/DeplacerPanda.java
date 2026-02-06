@@ -34,13 +34,11 @@ public class DeplacerPanda implements Action {
         // 2. Manger le bambou
         Parcelle parcelle = plateau.getParcelle(destination);
 
-        // CORRECTION : On vérifie que la parcelle existe, n'est pas l'étang, et a du
+        // On vérifie que la parcelle existe, n'est pas l'étang, et a du
         // bambou
         if (parcelle != null && parcelle.getCouleur() != Couleur.AUCUNE) {
 
             if (pandaJeu.mangerBambou(destination, plateau)) {
-                // parcelle.getBambou().retirerSection();
-                // redondant
 
                 // On ajoute à l'inventaire
                 bot.getInventaire().ajouterBambou(parcelle.getCouleur());

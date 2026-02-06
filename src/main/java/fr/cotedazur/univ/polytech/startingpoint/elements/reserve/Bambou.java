@@ -6,7 +6,7 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.QuantityException;
 public class Bambou {
 
     private int numberOfSections; // hauteur section
-    private static final int MAX_HEIGHGT = 5; // hauteur max d'un bambou (socle + sections)
+    private static final int MAX_HEIGHT = 5; // hauteur max d'un bambou (socle + sections)
     private Couleur sectionColour;
 
     private int sectionGrowth; // dicte le nombre de combien de sections on fait pousser le bambou
@@ -26,7 +26,7 @@ public class Bambou {
     }
 
     public void croissance() {
-        if (numberOfSections <= MAX_HEIGHGT - sectionGrowth) {
+        if (numberOfSections <= MAX_HEIGHT - sectionGrowth) {
             takeBambooSection();
             numberOfSections += sectionGrowth; // on agrandit le bambou i.e: on rajoute une section
         }
@@ -83,6 +83,6 @@ public class Bambou {
     }
 
     public int getHauteurMax() {
-        return MAX_HEIGHGT;
+        return MAX_HEIGHT;
     }
 }

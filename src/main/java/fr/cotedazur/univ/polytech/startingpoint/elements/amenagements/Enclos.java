@@ -5,7 +5,6 @@ import fr.cotedazur.univ.polytech.startingpoint.elements.movables.Panda;
 import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
 
 public class Enclos implements Amenagement {
-    // SUPPRESSION DU STATIC INT QUANTITY
 
     // Constructeur utilisé par la Pioche (pour les parcelles pré-aménagées)
     public Enclos(Parcelle parcelle) {

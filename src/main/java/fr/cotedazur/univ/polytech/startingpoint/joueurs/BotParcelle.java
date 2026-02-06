@@ -22,15 +22,8 @@ import java.util.Set;
 
 import static fr.cotedazur.univ.polytech.startingpoint.GameEngine.LOGGER;
 
-/**
- * Bot spécialisé dans les Objectifs Parcelles (Jardinier Constructeur).
- * Stratégie : "Simuler et Noter" (Exhaustive Search).
- */
 public class BotParcelle extends Bot {
-    private final Random random; // pour les choix de meteo
-
-    // Mémoire tampon pour stocker la décision prise lors de la phase
-    // "choisirParcelle"
+    private final Random random;
     private Position positionMemoriseePourLeTour = null;
 
     public BotParcelle(String nom) {
@@ -38,54 +31,40 @@ public class BotParcelle extends Bot {
         this.random = new Random();
     }
 
-    /**
-     * LOGIQUE GÉNÉRALE DU TOUR
-     * Priorité absolue : Avoir des objectifs parcelles et poser des tuiles.
-     */
     @Override
     protected Action choisirUneAction(GameState gameState, Set<TypeAction> typesInterdits) {
-        // 1. Si je n'ai pas d'objectifs Parcelle -> Je pioche (Urgence)
+        // Priorité 1 : Urgence d'objectifs (si main vide)
         if (getNombreObjectifsParcelleEnMain() == 0 && !typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
             return new PiocherObjectif(TypeObjectif.PARCELLE);
         }
 
-        // 2. Si je peux poser une parcelle -> C'est mon action principale
-        // (La réflexion intelligente se fera dans choisirParcelle appelé par l'action)
+        // Priorité 2 : Action principale (Poser Parcelle)
         if (!typesInterdits.contains(TypeAction.POSER_PARCELLE) && !gameState.getPiocheParcelle().estVide()) {
             return new PoserParcelle();
         }
 
-        // 3. Sinon, actions de remplissage (Piocher encore, ou Irrigation)
+        // Priorité 3 : Remplissage (Piocher encore)
         if (!typesInterdits.contains(TypeAction.PIOCHER_OBJECTIF)) {
             return new PiocherObjectif(TypeObjectif.PARCELLE);
         }
 
-        return null; // Passe son tour si bloqué
+        return null;
     }
 
-    /**
-     * LE CŒUR DU RÉACTEUR : SIMULER ET NOTER
-     * Cette méthode choisit la meilleure tuile ET calcule déjà où la mettre.
-     */
     @Override
     public Parcelle choisirParcelle(SelectionParcelle selection, Plateau plateau) {
         List<Parcelle> tuilesCandidates = selection.getParcellesAChoisir();
         List<Position> positionsLegales = plateau.getEmplacementsDisponibles();
 
-        Parcelle meilleurTuile = tuilesCandidates.get(0);
-        Position meilleurPos = (positionsLegales.isEmpty()) ? null : positionsLegales.get(0);
-        int meilleurScore = -1;
+        Parcelle meilleurTuile = tuilesCandidates.getFirst();
+        Position meilleurPos = positionsLegales.isEmpty() ? null : positionsLegales.getFirst();
+        int meilleurScore = Integer.MIN_VALUE;
 
-        // --- ALGORITHME EXHAUSTIF (Brute Force Intelligent) ---
-        // Pour chaque tuile disponible...
+        // Algorithme de recherche exhaustif : on teste chaque combinaison Tuile/Position
         for (Parcelle tuile : tuilesCandidates) {
-            // Pour chaque emplacement légal sur le plateau...
             for (Position pos : positionsLegales) {
-
-                // 1. Simuler & Noter
                 int score = evaluerCoup(tuile, pos, plateau);
 
-                // 2. Choisir (Max)
                 if (score > meilleurScore) {
                     meilleurScore = score;
                     meilleurTuile = tuile;
@@ -94,93 +73,80 @@ public class BotParcelle extends Bot {
             }
         }
 
-        // 3. Mémorisation pour l'étape suivante
         this.positionMemoriseePourLeTour = meilleurPos;
-        LOGGER.info(getNom() + " a calculé le meilleur coup : " + meilleurTuile.getCouleur() + " en " + meilleurPos
-                + " (Score: " + meilleurScore + ")");
+        LOGGER.info(getNom() + " a choisi : " + meilleurTuile.getCouleur() + " en " + meilleurPos + " (Score: " + meilleurScore + ")");
 
-        // Validation du choix dans le moteur de jeu
         selection.validerChoix(meilleurTuile);
         return meilleurTuile;
     }
 
-    /**
-     * Récupère simplement la position calculée à l'étape précédente.
-     */
     @Override
     public Position choisirPosition(Parcelle parcelleChoisie, Plateau plateau) {
+        // Utilisation de la mémoire tampon calculée lors de choisirParcelle
         if (positionMemoriseePourLeTour != null && plateau.isPositionDisponible(positionMemoriseePourLeTour)) {
             Position pos = positionMemoriseePourLeTour;
-            positionMemoriseePourLeTour = null; // Reset pour le prochain tour
+            positionMemoriseePourLeTour = null;
             return pos;
         }
-        // Fallback de sécurité (ne devrait pas arriver si le plateau n'a pas changé)
+
         List<Position> dispos = plateau.getEmplacementsDisponibles();
-        return dispos.isEmpty() ? null : dispos.get(0);
+        return dispos.isEmpty() ? null : dispos.getFirst();
     }
 
     // =================================================================================
-    // FONCTION D'ÉVALUATION (SCORING)
+    // SCORE
     // =================================================================================
 
+    /**
+     * Calcule un score pour un coup donné.
+     * Le score est la somme de trois critères : Utilité pour objectifs, Adjacence couleur, Accès eau.
+     */
     private int evaluerCoup(Parcelle tuile, Position pos, Plateau plateau) {
         int score = 0;
-        Couleur couleurTuile = tuile.getCouleur();
+        Couleur couleur = tuile.getCouleur();
 
-        // Critère 1 : Besoin Immédiat (Poids FORT : 20 pts)
-        // Est-ce que cette couleur m'aide pour un de mes objectifs ?
-        boolean couleurUtile = false;
+        score += calculerScoreObjectifs(couleur);
+        score += calculerScoreAdjacence(couleur, pos, plateau);
+        score += calculerScoreIrrigation(pos, plateau);
+
+        return score;
+    }
+
+    private int calculerScoreObjectifs(Couleur couleur) {
         for (Objectif obj : getInventaire().getObjectifs()) {
-            if (obj.getType() == TypeObjectif.PARCELLE && obj.getCouleurs().contains(couleurTuile)) {
-                score += 20;
-                couleurUtile = true;
-                // Si la tuile complète potentiellement un motif (heuristic simple: on en a
-                // besoin), on booste
+            if (obj.getType() == TypeObjectif.PARCELLE && obj.getCouleurs().contains(couleur)) {
+                return 20; // Bonus fort si la couleur aide un objectif
             }
         }
+        return -10; // Malus si couleur inutile
+    }
 
-        // Si la couleur ne sert à rien, on penalise fortement ce coup
-        if (!couleurUtile) {
-            score -= 10;
-        }
-
-        // Critère 2 : Adjacence Utile / Regroupement (Poids MOYEN : 10 pts par voisin)
-        // On regarde les voisins directs. Créer des zones unicolores est la clé des
-        // motifs.
+    private int calculerScoreAdjacence(Couleur couleur, Position pos, Plateau plateau) {
         int voisinsMemeCouleur = 0;
+
         for (PositionsRelatives dir : PositionsRelatives.values()) {
-            if (dir == PositionsRelatives.ZERO)
-                continue;
+            if (dir == PositionsRelatives.ZERO) continue;
 
             Position voisinPos = pos.add(dir.getPosition());
             Parcelle voisin = plateau.getParcelle(voisinPos);
 
-            if (voisin != null && voisin.getCouleur() == couleurTuile) {
+            if (voisin != null && voisin.getCouleur() == couleur) {
                 voisinsMemeCouleur++;
             }
         }
-        score += (voisinsMemeCouleur * 10);
 
-        // Critère 3 : Irrigation (Poids VARIABLE : 15 pts)
-        // Une parcelle irriguée vaut plus cher car elle valide les objectifs
-        boolean accesEau = pos.estAdjacent(GrillePlateau.POSITION_ORIGINE) || aCanalAdjacent(plateau, pos);
-        if (accesEau) {
-            score += 15;
-        } else {
-            // Petit malus si c'est sec, car il faudra dépenser des actions pour irriguer
-            score -= 5;
-        }
-
-        // Critère 4 : Avancement précis du Motif (Bonus Spécial)
-        // Si je pose une tuile qui crée une ligne ou un triangle avec mes voisins
-        if (voisinsMemeCouleur >= 1) {
-            score += 5; // Début de motif
-        }
-        if (voisinsMemeCouleur >= 2) {
-            score += 20; // Motif avancé (Triangle ou Ligne probable)
-        }
+        // 10 pts par voisin + Bonus de motif (Ligne/Triangle) si >= 2 voisins
+        int score = voisinsMemeCouleur * 10;
+        if (voisinsMemeCouleur >= 1) score += 5;
+        if (voisinsMemeCouleur >= 2) score += 20;
 
         return score;
+    }
+
+    private int calculerScoreIrrigation(Position pos, Plateau plateau) {
+        boolean accesEau = pos.estAdjacent(GrillePlateau.POSITION_ORIGINE) || aCanalAdjacent(plateau, pos);
+        // Une parcelle irriguée (ou proche de l'eau) a plus de valeur
+        return accesEau ? 15 : -5;
     }
 
     // --- UTILITAIRES ---
@@ -192,45 +158,30 @@ public class BotParcelle extends Bot {
     }
 
     private boolean aCanalAdjacent(Plateau plateau, Position pos) {
-        // On vérifie si un canal touche cette position (simulation simplifiée)
-        // Dans l'idéal, on utiliserait plateau.peutPlacerCanal ou verification des
-        // arêtes
-        // Ici on suppose que si on est collé à une position irriguée, c'est bon signe
-        // (heuristique)
-        return false; // À améliorer avec l'accès aux canaux du plateau si nécessaire
+        // TODO: Implémenter une vérification réelle via le Plateau si nécessaire
+        return false;
     }
 
-    /// =================== METEO ===================
-    ///
+    // =================== METEO ===================
 
-    // Implémentation pour la pluie
     @Override
     public Parcelle choisirParcelleMeteo(List<Parcelle> parcellesIrriguees) {
-        if (parcellesIrriguees.isEmpty()) {
-            return null;
-        }
-        // Choisit une parcelle aléatoire parmi les parcelles irriguées
+        if (parcellesIrriguees.isEmpty()) return null;
         return parcellesIrriguees.get(random.nextInt(parcellesIrriguees.size()));
     }
 
-    // Implémentation pour l'orage
     @Override
     public Parcelle choisirDestinationPanda(List<Parcelle> parcelles) {
-        if (parcelles.isEmpty()) {
-            return null;
-        }
-        // Choisit une parcelle aléatoire pour placer le panda
+        if (parcelles.isEmpty()) return null;
         return parcelles.get(random.nextInt(parcelles.size()));
     }
 
-    // Implémentation pour le choix libre
     @Override
     public Meteo choisirMeteo() {
         Meteo[] options = { Meteo.SOLEIL, Meteo.PLUIE, Meteo.VENT, Meteo.ORAGE, Meteo.NUAGES };
         return options[random.nextInt(options.length)];
     }
 
-    // Implémentation pour les nuages sans aménagement
     @Override
     public Meteo choisirMeteoAlternative() {
         Meteo[] options = { Meteo.SOLEIL, Meteo.PLUIE, Meteo.VENT, Meteo.ORAGE };

@@ -42,9 +42,7 @@ public class BotRandom extends Bot {
                         List<Position> dispos = plateau.getEmplacementsDisponibles();
                         if (!dispos.isEmpty()) {
                             Parcelle p = gameState.getPiocheParcelle().piocher();
-                            if (p != null) {
-                                return new PoserParcelle();
-                            }
+                            if (p != null) return new PoserParcelle();
                         }
                     }
                     break;
@@ -52,18 +50,16 @@ public class BotRandom extends Bot {
                 case 1: // DEPLACER PANDA
                     if (!typesInterdits.contains(TypeAction.DEPLACER_PANDA)) {
                         List<Position> dep = plateau.getTrajetsLigneDroite(gameState.getPanda().getPositionPanda());
-                        if (!dep.isEmpty()) {
+                        if (!dep.isEmpty())
                             return new DeplacerPanda(gameState.getPanda(), dep.get(random.nextInt(dep.size())));
-                        }
                     }
                     break;
 
                 case 2: // DEPLACER JARDINIER
                     if (!typesInterdits.contains(TypeAction.DEPLACER_JARDINIER)) {
                         List<Position> dep = plateau.getTrajetsLigneDroite(gameState.getJardinier().getPosition());
-                        if (!dep.isEmpty()) {
+                        if (!dep.isEmpty())
                             return new DeplacerJardinier(gameState.getJardinier(), dep.get(random.nextInt(dep.size())));
-                        }
                     }
                     break;
 
@@ -74,12 +70,10 @@ public class BotRandom extends Bot {
 
                         if (!jardinierVide || !pandaVide) {
                             TypeObjectif type;
-                            if (jardinierVide)
-                                type = TypeObjectif.PANDA;
-                            else if (pandaVide)
-                                type = TypeObjectif.JARDINIER;
-                            else
-                                type = random.nextBoolean() ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
+
+                            if (jardinierVide) type = TypeObjectif.PANDA;
+                            else if (pandaVide) type = TypeObjectif.JARDINIER;
+                            else type = random.nextBoolean() ? TypeObjectif.JARDINIER : TypeObjectif.PANDA;
 
                             return new PiocherObjectif(type);
                         }
@@ -87,12 +81,14 @@ public class BotRandom extends Bot {
                     break;
 
                 case 4: // PRENDRE IRRIGATION
-                    // CORRECTION : On interdit si on en a déjà plus de 2
                     if (!typesInterdits.contains(TypeAction.PRENDRE_IRRIGATION)
                             && getInventaire().getNombreCanauxDisponibles() < 2) {
                         return new ObtenirCanalDirrigation();
                     }
                     break;
+
+                default:
+                    return null;
             }
         }
         return null;

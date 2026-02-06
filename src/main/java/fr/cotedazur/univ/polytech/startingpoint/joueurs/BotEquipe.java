@@ -10,17 +10,18 @@ import fr.cotedazur.univ.polytech.startingpoint.utilitaires.Position;
 import fr.cotedazur.univ.polytech.startingpoint.weather.Meteo;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class BotEquipe extends Bot {
 
     private final EquipeStrategie strategie;
-    private final ExpertMeteo meteoManager; // Réutilisation de votre ExpertMeteo existant !
+    private final Random random; // Remplacement de ExpertMeteo
 
     public BotEquipe(String nom) {
         super(nom);
         this.strategie = new EquipeStrategie(this);
-        this.meteoManager = new ExpertMeteo(); // On réutilise le code météo intelligent
+        this.random = new Random(); // Initialisation du générateur aléatoire interne
     }
 
     @Override
@@ -40,25 +41,33 @@ public class BotEquipe extends Bot {
         return strategie.choisirPosition(parcelleChoisie, plateau);
     }
 
-    // --- Délégations Météo (Réutilisation ExpertMeteo) ---
+    // --- Gestion Météo (Intégrée directement ici) ---
 
     @Override
     public Meteo choisirMeteo() {
-        return meteoManager.choisirMeteoStrategy();
+        // Logique récupérée de ExpertMeteo : Aléatoire parmi les options
+        Meteo[] options = { Meteo.SOLEIL, Meteo.PLUIE, Meteo.VENT, Meteo.ORAGE, Meteo.NUAGES };
+        return options[random.nextInt(options.length)];
     }
 
     @Override
     public Meteo choisirMeteoAlternative() {
-        return meteoManager.choisirMeteoStrategy();
+        // Même logique pour l'alternative
+        Meteo[] options = { Meteo.SOLEIL, Meteo.PLUIE, Meteo.VENT, Meteo.ORAGE, Meteo.NUAGES };
+        return options[random.nextInt(options.length)];
     }
 
     @Override
     public Parcelle choisirParcelleMeteo(List<Parcelle> parcellesIrriguees) {
-        return meteoManager.choisirParcellePourPluie(parcellesIrriguees);
+        // Logique récupérée de choisirParcellePourPluie
+        if (parcellesIrriguees.isEmpty()) return null;
+        return parcellesIrriguees.get(random.nextInt(parcellesIrriguees.size()));
     }
 
     @Override
     public Parcelle choisirDestinationPanda(List<Parcelle> parcelles) {
-        return meteoManager.choisirParcellePourOrage(parcelles);
+        // Logique récupérée de choisirParcellePourOrage
+        if (parcelles.isEmpty()) return null;
+        return parcelles.get(random.nextInt(parcelles.size()));
     }
 }

@@ -85,7 +85,7 @@ public enum Meteo {
 
             if (amenagementDispo != null) {
                 try {
-                    amenagementDispo.pickArrangement();
+                    amenagementDispo.pickAmenagement();
                     joueur.recevoirAmenagement(amenagementDispo);
                 } catch (QuantityException e) {
                     appliquerMeteoAlternative(gameState, joueur, tour);

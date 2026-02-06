@@ -5,15 +5,15 @@ import fr.cotedazur.univ.polytech.startingpoint.elements.reserve.Parcelle;
 
 public class Bassin implements Amenagement {
     public Bassin(Parcelle parcelle) {
+        //
     }
 
-    // Constructeur Achat/Pose
     public Bassin(Parcelle parcelle, Bambou bamboo) {
         if (!parcelle.getIsAmenagee()) {
             // 1. On attache l'aménagement
             parcelle.fetchAmenagementAcqui(this);
 
-            // 2. CORRECTION : On déclenche l'effet immédiat (Irrigation)
+            // 2. On déclenche l'effet immédiat (Irrigation)
             this.actionSurParcelle(parcelle);
         }
     }

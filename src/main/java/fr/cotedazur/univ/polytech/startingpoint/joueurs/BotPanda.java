@@ -129,7 +129,8 @@ public class BotPanda extends Bot {
                     if (dir == PositionsRelatives.ZERO) continue;
                     Position voisin = pos.add(dir.getPosition());
 
-                    if (plateau.peutPlacerCanal(pos, voisin) && !plateau.aCanalEntre(pos, voisin)) {
+                    if (plateau.peutPlacerCanal(pos, voisin)
+                            && !plateau.aCanalEntre(pos, voisin)) {
                         return new PoserCanalDirrigation(pos, voisin);
                     }
                 }

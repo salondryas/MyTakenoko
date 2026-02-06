@@ -88,7 +88,6 @@ public class GestionIrrigation {
     public void checkNouvelleIrrigation(Parcelle parcelle, Position position) {
         if (parcellesDejaIrriguees.contains(position))
             return;// Déjà traitée
-        // return false; // Déjà traitée
 
         boolean estIrriguable = position.estAdjacent(POSITION_ORIGINE) // Adjacent Etang
                 // || parcelle.getAmenagement() instanceof Bassin // Aménagement Bassin
@@ -99,9 +98,9 @@ public class GestionIrrigation {
         if (estIrriguable) {
             parcellesDejaIrriguees.add(position);
             parcelle.triggerIrrigation(); // IMPORTANT : Met à jour le boolean interne de la Parcelle
-            // return true;
+
         }
-        // return false;
+
     }
 
     public boolean aCanalEntre(Position p1, Position p2) {

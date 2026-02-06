@@ -21,7 +21,7 @@ public enum AmenagmentAttribuable { // amenagement pour les parcelles qui n'en o
         return quantite;
     }
 
-    public void pickArrangement() throws QuantityException {
+    public void pickAmenagement() throws QuantityException {
         if (quantite > 0)
             quantite--;
         else

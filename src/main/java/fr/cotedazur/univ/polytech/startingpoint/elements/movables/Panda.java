@@ -12,7 +12,6 @@ public class Panda {
     private final Plateau plateau;
     private boolean canEAT;
 
-    // CORRECTION : Constructeur unique et complet
     public Panda(Plateau plateau) {
         this.plateau = plateau;
         this.positionActuellePanda = GrillePlateau.POSITION_ORIGINE;
@@ -45,7 +44,7 @@ public class Panda {
         return false;
     }
 
-    // CORRECTION : Méthode requise par BotTeacher
+    // Méthode requise par BotTeacher
     public boolean accessibleEnUnCoupParPanda(GameState gameState, Position cible) {
         if (this.positionActuellePanda.equals(cible))
             return false;

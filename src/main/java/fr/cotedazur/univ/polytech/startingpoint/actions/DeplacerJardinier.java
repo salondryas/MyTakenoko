@@ -39,12 +39,11 @@ public class DeplacerJardinier implements Action {
         List<Parcelle> parcellesAArroser = new ArrayList<>();
         Parcelle parcelleArrivee = plateau.getParcelle(destination);
 
-        if (parcelleArrivee != null && !(parcelleArrivee == GrillePlateau.PARCELLE_ORIGINE)) { // on utilise == car il y a
-                                                                                             // une unique parcelle
+        if (parcelleArrivee != null && !(parcelleArrivee == GrillePlateau.PARCELLE_ORIGINE)) {
             // origine sur tout le plateau
             parcellesAArroser.add(parcelleArrivee);
 
-            // CORRECTION : Appel de la méthode locale au lieu de plateau.getParcellesVoisinesMemeCouleur
+            // Appel de la méthode locale au lieu de plateau.getParcellesVoisinesMemeCouleur
             parcellesAArroser.addAll(getParcellesVoisinesMemeCouleur(plateau, destination, parcelleArrivee));
         }
 
@@ -63,9 +62,11 @@ public class DeplacerJardinier implements Action {
 
     /**
      * Méthode utilitaire déplacée depuis Plateau.java pour garder le plateau léger.
-     * Récupère les parcelles adjacentes qui partagent la même couleur que la parcelle centrale.
+     * Récupère les parcelles adjacentes qui partagent la même couleur que la
+     * parcelle centrale.
      */
-    private List<Parcelle> getParcellesVoisinesMemeCouleur(Plateau plateau, Position positionCible, Parcelle parcelleCentrale) {
+    private List<Parcelle> getParcellesVoisinesMemeCouleur(Plateau plateau, Position positionCible,
+            Parcelle parcelleCentrale) {
         List<Parcelle> voisinesMemeCouleur = new ArrayList<>();
 
         for (PositionsRelatives direction : PositionsRelatives.values()) {

@@ -64,16 +64,9 @@ public class Plateau {
 
         // Gestion Irrigation (Correction : 2 arguments uniquement)
 
-        // boolean estIrriguee = irrigation.checkNouvelleIrrigation(parcelle, position);
+        // Vérifie si une parcelle vient d'être irriguée suite à sa pose.
+        // si ce n'est pas le cas on declenche l'irriguation si c'est irriguable
         irrigation.checkNouvelleIrrigation(parcelle, position);
-
-        /*
-         * if (estIrriguee && parcelle.getNbSectionsSurParcelle() == 0) {
-         * parcelle.getBambou().croissance();
-         * }
-         */
-        // Ne sert à rien si on a deja trigger l'irrgation depuis
-        // checkNouvelleIrrigation()
 
         return true;
     }

@@ -53,11 +53,12 @@ mvn exec:java
 # Lancer une simulation massive de 2000 parties (statistiques)
 mvn exec:java "-Dexec.args=--2thousands"
 ```
-## 👥 Auteur
 
-EL HADI Ilias - Élève Ingénieur en Informatique à Polytech Nice Sophia.
-BAZON Nathan - Élève Ingénieur en Informatique à Polytech Nice Sophia.
-TAMEHMACHT Florian - Élève Ingénieur en Informatique à Polytech Nice Sophia.
-CANTO-RINGELSTEIN Timeo- Élève Ingénieur en Informatique à Polytech Nice Sophia.
+## 👥 Auteur
+EL HADI Ilias 
+BAZON Nathan 
+TAMEHMACHT Florian
+CANTO-RINGELSTEIN Timeo
+
 
 
